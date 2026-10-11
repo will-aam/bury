@@ -1,0 +1,249 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  DONA
+  AJUDANTE
+}
+
+enum TipoCliente {
+  REVENDEDOR
+  CONSUMIDOR_FINAL
+}
+
+enum FormaPagamento {
+  DINHEIRO
+  PIX
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  OUTRO
+}
+
+enum StatusDespesa {
+  PENDENTE
+  PAGO
+}
+
+enum StatusParcela {
+  PENDENTE
+  PAGO
+}
+
+enum TipoCustoAdicional {
+  PERCENTUAL
+  FIXO
+}
+
+enum UnidadeBase {
+  GRAMA
+  MILILITRO
+  UNIDADE
+  GOTA
+}
+
+enum UnidadeCompra {
+  KG
+  G
+  L
+  ML
+  UNIDADE
+  GOTA
+}
+
+model Usuario {
+  id           String    @id @default(cuid())
+  nome         String
+  email        String    @unique
+  senhaHash    String
+  role         Role      @default(DONA)
+  ativo        Boolean   @default(true)
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+
+  vendasCriadas      Venda[]     @relation("VendaCriador")
+  pagamentosCriados  Pagamento[] @relation("PagamentoCriador")
+  despesasCriadas    Despesa[]   @relation("DespesaCriador")
+}
+
+model Cliente {
+  id           String      @id @default(cuid())
+  nome         String      @unique
+  tipo         TipoCliente @default(CONSUMIDOR_FINAL)
+  telefone     String?
+  endereco     String?
+  observacoes  String?
+  ativo        Boolean     @default(true)
+  isPadrao     Boolean     @default(false)
+  criadoEm     DateTime    @default(now())
+  atualizadoEm DateTime    @updatedAt
+
+  vendas       Venda[]
+}
+
+model Produto {
+  id           String        @id @default(cuid())
+  nome         String        @unique
+  precoVenda   Int           // Armazenado em centavos (ex: 2500 para R$ 25,00)
+  rendimento   Int           @default(1)
+  ativo        Boolean       @default(true)
+  criadoEm     DateTime      @default(now())
+  atualizadoEm DateTime      @updatedAt
+
+  itensVenda   ItemVenda[]
+  fichaTecnica FichaTecnica?
+}
+
+model Venda {
+  id               String       @id @default(cuid())
+  numero           Int          @default(autoincrement())
+  data             DateTime     @default(now())
+  clienteId        String
+  cliente          Cliente      @relation(fields: [clienteId], references: [id])
+  dataPrevistaPgto DateTime?
+  observacoes      String?
+  criadoPorId      String
+  criadoPor        Usuario      @relation("VendaCriador", fields: [criadoPorId], references: [id])
+  criadoEm         DateTime     @default(now())
+  atualizadoEm     DateTime     @updatedAt
+
+  itens            ItemVenda[]
+  pagamentos       Pagamento[]
+}
+
+model ItemVenda {
+  id            String   @id @default(cuid())
+  vendaId       String
+  venda         Venda    @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+  produtoId     String
+  produto       Produto  @relation(fields: [produtoId], references: [id])
+  quantidade    Int
+  precoUnitario Int      // Centavos no momento da venda
+  custoUnitario Int?     // Centavos no momento da venda (snapshot da ficha)
+}
+
+model Pagamento {
+  id          String         @id @default(cuid())
+  vendaId     String
+  venda       Venda          @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+  data        DateTime       @default(now())
+  valor       Int            // Centavos
+  forma       FormaPagamento
+  criadoPorId String
+  criadoPor   Usuario        @relation("PagamentoCriador", fields: [criadoPorId], references: [id])
+  criadoEm    DateTime       @default(now())
+}
+
+model CategoriaDespesa {
+  id       String    @id @default(cuid())
+  nome     String    @unique
+  ativo    Boolean   @default(true)
+  despesas Despesa[]
+}
+
+model Despesa {
+  id           String           @id @default(cuid())
+  data         DateTime         @default(now())
+  categoriaId  String
+  categoria    CategoriaDespesa @relation(fields: [categoriaId], references: [id])
+  descricao    String
+  valor        Int              // Centavos
+  status       StatusDespesa    @default(PAGO)
+  criadoPorId  String
+  criadoPor    Usuario          @relation("DespesaCriador", fields: [criadoPorId], references: [id])
+  criadoEm     DateTime         @default(now())
+  atualizadoEm DateTime         @updatedAt
+}
+
+// ----------------- FASE 2: Fichas, Ingredientes e Parcelamento -----------------
+
+model Ingrediente {
+  id           String             @id @default(cuid())
+  nome         String             @unique
+  unidadeBase  UnidadeBase
+  ativo        Boolean            @default(true)
+  criadoEm     DateTime           @default(now())
+  atualizadoEm DateTime           @updatedAt
+
+  historicoPrecos PrecoIngrediente[]
+  itensFicha      ItemFicha[]
+}
+
+model PrecoIngrediente {
+  id               String        @id @default(cuid())
+  ingredienteId    String
+  ingrediente      Ingrediente   @relation(fields: [ingredienteId], references: [id])
+  dataRegistro     DateTime      @default(now())
+  unidadeCompra    UnidadeCompra
+  tamanhoEmbalagem Float
+  precoEmbalagem   Int           // Centavos
+  custoUnidadeBase Float         // Centavos por unidade base
+}
+
+model CustoAdicional {
+  id     String             @id @default(cuid())
+  nome   String             @unique
+  tipo   TipoCustoAdicional
+  valor  Int                // Se percentual: basis points (ex: 500 = 5.00%). Se fixo: centavos.
+  ativo  Boolean            @default(true)
+
+  fichas FichaCustoAdicional[]
+}
+
+model FichaTecnica {
+  id           String                @id @default(cuid())
+  produtoId    String                @unique
+  produto      Produto               @relation(fields: [produtoId], references: [id])
+  observacoes  String?
+  criadoEm     DateTime              @default(now())
+  atualizadoEm DateTime              @updatedAt
+
+  itens        ItemFicha[]
+  custosExtras FichaCustoAdicional[]
+}
+
+model ItemFicha {
+  id             String       @id @default(cuid())
+  fichaTecnicaId String
+  fichaTecnica   FichaTecnica @relation(fields: [fichaTecnicaId], references: [id], onDelete: Cascade)
+  ingredienteId  String
+  ingrediente    Ingrediente  @relation(fields: [ingredienteId], references: [id])
+  quantidade     Float        // Na unidade base
+}
+
+model FichaCustoAdicional {
+  fichaTecnicaId   String
+  fichaTecnica     FichaTecnica   @relation(fields: [fichaTecnicaId], references: [id], onDelete: Cascade)
+  custoAdicionalId String
+  custoAdicional   CustoAdicional @relation(fields: [custoAdicionalId], references: [id])
+
+  @@id([fichaTecnicaId, custoAdicionalId])
+}
+
+model CompraParcelada {
+  id           String    @id @default(cuid())
+  descricao    String
+  valorTotal   Int       // Centavos
+  numParcelas  Int
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+
+  parcelas     Parcela[]
+}
+
+model Parcela {
+  id                String          @id @default(cuid())
+  compraParceladaId String
+  compraParcelada   CompraParcelada @relation(fields: [compraParceladaId], references: [id], onDelete: Cascade)
+  numero            Int
+  vencimento        DateTime
+  valor             Int             // Centavos
+  status            StatusParcela   @default(PENDENTE)
+  pagoEm            DateTime?
+}
