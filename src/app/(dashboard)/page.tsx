@@ -100,13 +100,6 @@ export default async function DashboardPage() {
 
   const clientesDevedores = Object.values(saldosPorCliente).sort((a, b) => b.saldoDevedor - a.saldoDevedor);
 
-  // Despesas agrupadas por categoria
-  const despesasPorCategoria: Record<string, number> = {};
-  for (const d of despesasMes) {
-    const cat = d.categoria.nome;
-    despesasPorCategoria[cat] = (despesasPorCategoria[cat] || 0) + d.valor;
-  }
-
   // Top Produtos do Mês
   const produtosVendidos: Record<string, { nome: string; quantidade: number; total: number }> = {};
   for (const v of vendasMes) {
@@ -119,7 +112,6 @@ export default async function DashboardPage() {
     }
   }
 
-  // Buscar nomes dos produtos vendidos
   const produtosDb = await prisma.produto.findMany({
     where: { id: { in: Object.keys(produtosVendidos) } },
   });
@@ -136,107 +128,107 @@ export default async function DashboardPage() {
     : 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
             Painel da Bolaria
           </h1>
-          <p className="text-sm text-stone-600 mt-1">
+          <p className="text-xs sm:text-sm text-stone-600 mt-1">
             Resumo financeiro e operacional deste mês
           </p>
         </div>
 
         <Link
           href="/vendas/nova"
-          className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition"
+          className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition text-sm w-full sm:w-auto"
         >
           <ShoppingBag className="w-5 h-5" />
           Lançar Nova Venda
         </Link>
       </div>
 
-      {/* Cards de Métricas Principais */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* Cards de Métricas Principais (2 colunas no celular, 4 no desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         {/* Total Vendas */}
-        <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-stone-500">Vendas do Mês</span>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
-              <TrendingUp className="w-5 h-5" />
+            <span className="text-xs sm:text-sm font-semibold text-stone-500">Vendas</span>
+            <div className="p-1.5 sm:p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-stone-900 mt-3">
+          <div className="text-lg sm:text-2xl lg:text-3xl font-black text-stone-900 mt-2 sm:mt-3">
             {formatarCentavosParaReal(totalVendasMes)}
           </div>
-          <div className="text-xs text-stone-600 mt-2 flex items-center gap-1">
+          <div className="text-[11px] sm:text-xs text-stone-600 mt-1 sm:mt-2 flex items-center gap-1">
             {comparativoPercentual >= 0 ? (
               <span className="text-emerald-600 font-bold">+{comparativoPercentual}%</span>
             ) : (
               <span className="text-red-600 font-bold">{comparativoPercentual}%</span>
             )}
-            <span>vs mês anterior</span>
+            <span className="hidden sm:inline">vs anterior</span>
           </div>
         </div>
 
         {/* Despesas */}
-        <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-stone-500">Despesas do Mês</span>
-            <div className="p-2 bg-rose-50 text-rose-600 rounded-xl">
-              <TrendingDown className="w-5 h-5" />
+            <span className="text-xs sm:text-sm font-semibold text-stone-500">Despesas</span>
+            <div className="p-1.5 sm:p-2 bg-rose-50 text-rose-600 rounded-xl">
+              <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-stone-900 mt-3">
+          <div className="text-lg sm:text-2xl lg:text-3xl font-black text-stone-900 mt-2 sm:mt-3">
             {formatarCentavosParaReal(totalDespesasMes)}
           </div>
-          <div className="text-xs text-stone-600 mt-2">
-            {despesasMes.length} lançamentos registrados
+          <div className="text-[11px] sm:text-xs text-stone-600 mt-1 sm:mt-2">
+            {despesasMes.length} lançamentos
           </div>
         </div>
 
         {/* Resultado Líquido */}
-        <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-stone-500">Resultado Líquido</span>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
-              <Wallet className="w-5 h-5" />
+            <span className="text-xs sm:text-sm font-semibold text-stone-500">Resultado</span>
+            <div className="p-1.5 sm:p-2 bg-amber-50 text-amber-600 rounded-xl">
+              <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className={`text-2xl sm:text-3xl font-black mt-3 ${resultadoMes >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+          <div className={`text-lg sm:text-2xl lg:text-3xl font-black mt-2 sm:mt-3 ${resultadoMes >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
             {formatarCentavosParaReal(resultadoMes)}
           </div>
-          <div className="text-xs text-stone-600 mt-2">
-            Vendas menos Despesas
+          <div className="text-[11px] sm:text-xs text-stone-600 mt-1 sm:mt-2">
+            Líquido do mês
           </div>
         </div>
 
         {/* Total a Receber (Fiados) */}
-        <div className="bg-white p-6 rounded-2xl border border-rose-200 shadow-sm bg-gradient-to-br from-white to-rose-50/40">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-rose-200 shadow-xs bg-gradient-to-br from-white to-rose-50/40">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-rose-800">Fiado Total a Receber</span>
-            <div className="p-2 bg-rose-100 text-rose-700 rounded-xl">
-              <AlertCircle className="w-5 h-5" />
+            <span className="text-xs sm:text-sm font-bold text-rose-800">Fiado Total</span>
+            <div className="p-1.5 sm:p-2 bg-rose-100 text-rose-700 rounded-xl">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-rose-900 mt-3">
+          <div className="text-lg sm:text-2xl lg:text-3xl font-black text-rose-900 mt-2 sm:mt-3">
             {formatarCentavosParaReal(totalFiadoGeral)}
           </div>
-          <div className="text-xs text-rose-700 font-medium mt-2">
-            {clientesDevedores.length} cliente(s) com pendência
+          <div className="text-[11px] sm:text-xs text-rose-700 font-medium mt-1 sm:mt-2">
+            {clientesDevedores.length} devedor(es)
           </div>
         </div>
       </div>
 
-      {/* Grid de Tabelas: Clientes com Saldo Devedor & Top Produtos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Grid: Clientes com Saldo Devedor & Top Produtos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         {/* Clientes com Saldo em Aberto */}
-        <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-rose-600" />
-              <h2 className="font-bold text-lg text-stone-900">Fiados em Aberto por Cliente</h2>
+              <h2 className="font-bold text-base sm:text-lg text-stone-900">Fiados por Cliente</h2>
             </div>
             <Link
               href="/vendas?status=PENDENTE"
@@ -247,51 +239,40 @@ export default async function DashboardPage() {
           </div>
 
           {clientesDevedores.length === 0 ? (
-            <div className="text-center py-8 text-stone-600 text-sm">
+            <div className="text-center py-6 text-stone-600 text-sm">
               🎉 Nenhum cliente com fiado em aberto no momento!
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b text-stone-500 font-semibold text-xs">
-                    <th className="pb-3">Cliente</th>
-                    <th className="pb-3 text-right">Saldo Devedor</th>
-                    <th className="pb-3 text-right">Ação</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100">
-                  {clientesDevedores.slice(0, 5).map((c) => (
-                    <tr key={c.clienteId} className="hover:bg-stone-50">
-                      <td className="py-3 font-semibold text-stone-900">
-                        {c.nome}
-                        {c.telefone && <span className="block text-xs font-normal text-stone-600">{c.telefone}</span>}
-                      </td>
-                      <td className="py-3 text-right font-black text-rose-700">
-                        {formatarCentavosParaReal(c.saldoDevedor)}
-                      </td>
-                      <td className="py-3 text-right">
-                        <Link
-                          href={`/clientes/${c.clienteId}`}
-                          className="inline-block text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-1.5 rounded-lg transition"
-                        >
-                          Ver / Cobrar
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-3">
+              {clientesDevedores.slice(0, 5).map((c) => (
+                <div key={c.clienteId} className="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-100">
+                  <div>
+                    <span className="font-bold text-stone-900 text-sm block">{c.nome}</span>
+                    {c.telefone && <span className="text-xs text-stone-500">{c.telefone}</span>}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-black text-rose-700 text-sm">
+                      {formatarCentavosParaReal(c.saldoDevedor)}
+                    </span>
+                    <Link
+                      href={`/clientes/${c.clienteId}`}
+                      className="text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 px-2.5 py-1 rounded-lg"
+                    >
+                      Cobrar
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
         {/* Top 5 Produtos Mais Vendidos */}
-        <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Cake className="w-5 h-5 text-amber-600" />
-              <h2 className="font-bold text-lg text-stone-900">Bolos Mais Vendidos (Este Mês)</h2>
+              <h2 className="font-bold text-base sm:text-lg text-stone-900">Bolos Mais Vendidos</h2>
             </div>
             <Link
               href="/produtos"
@@ -302,16 +283,16 @@ export default async function DashboardPage() {
           </div>
 
           {topProdutos.length === 0 ? (
-            <div className="text-center py-8 text-stone-600 text-sm">
+            <div className="text-center py-6 text-stone-600 text-sm">
               Nenhuma venda registrada este mês.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {topProdutos.map((p, idx) => (
                 <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-100">
                   <div>
                     <div className="font-bold text-stone-900 text-sm">{p.nome}</div>
-                    <div className="text-xs text-stone-600">{p.quantidade} unidades vendidas</div>
+                    <div className="text-xs text-stone-500">{p.quantidade} unidades vendidas</div>
                   </div>
                   <div className="text-right font-black text-stone-900 text-sm">
                     {formatarCentavosParaReal(p.total)}

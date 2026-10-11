@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { formatarCentavosParaReal, formatarDataPtBr } from "@/lib/formatadores";
 import Link from "next/link";
-import { ShoppingBag, Plus, Filter, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import { Plus, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import ModalPagamentoVenda from "./ModalPagamentoVenda";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +30,6 @@ export default async function VendasPage({
     },
   });
 
-  // Processar totais e status calculados
   const vendasCalculadas = vendas.map((v) => {
     const total = v.itens.reduce((acc, i) => acc + i.quantidade * i.precoUnitario, 0);
     const pago = v.pagamentos.reduce((acc, p) => acc + p.valor, 0);
@@ -54,41 +53,41 @@ export default async function VendasPage({
     : vendasCalculadas;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
             Vendas e Fiados
           </h1>
-          <p className="text-sm text-stone-600 mt-1">
+          <p className="text-xs sm:text-sm text-stone-600 mt-1">
             Histórico completo de pedidos, entregas e controle de recebimentos
           </p>
         </div>
 
         <Link
           href="/vendas/nova"
-          className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-5 rounded-xl shadow-md transition"
+          className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-5 rounded-xl shadow-md transition text-sm w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" />
-          Lançar Venda
+          Lançar Nova Venda
         </Link>
       </div>
 
-      {/* Filtros de Status */}
-      <div className="flex flex-wrap gap-2">
+      {/* Filtros em Pílulas Responsivas com Rolagem Horizontal se Necessário */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         <Link
           href="/vendas"
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-            !statusFiltro ? "bg-stone-900 text-white" : "bg-white text-stone-700 border hover:bg-stone-50"
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+            !statusFiltro ? "bg-stone-900 text-white shadow-xs" : "bg-white text-stone-700 border hover:bg-stone-50"
           }`}
         >
-          Todas as Vendas ({vendasCalculadas.length})
+          Todas ({vendasCalculadas.length})
         </Link>
         <Link
           href="/vendas?status=PENDENTE"
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
             statusFiltro === "PENDENTE"
-              ? "bg-rose-700 text-white"
+              ? "bg-rose-700 text-white shadow-xs"
               : "bg-white text-rose-700 border border-rose-200 hover:bg-rose-50"
           }`}
         >
@@ -96,9 +95,9 @@ export default async function VendasPage({
         </Link>
         <Link
           href="/vendas?status=PARCIAL"
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
             statusFiltro === "PARCIAL"
-              ? "bg-amber-600 text-white"
+              ? "bg-amber-600 text-white shadow-xs"
               : "bg-white text-amber-700 border border-amber-200 hover:bg-amber-50"
           }`}
         >
@@ -106,9 +105,9 @@ export default async function VendasPage({
         </Link>
         <Link
           href="/vendas?status=PAGO"
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
             statusFiltro === "PAGO"
-              ? "bg-emerald-700 text-white"
+              ? "bg-emerald-700 text-white shadow-xs"
               : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50"
           }`}
         >
@@ -116,8 +115,90 @@ export default async function VendasPage({
         </Link>
       </div>
 
-      {/* Tabela de Vendas */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+      {/* Visualização Mobile: Cards Otimizados */}
+      <div className="grid grid-cols-1 gap-3 md:hidden">
+        {vendasFiltradas.length === 0 ? (
+          <div className="p-8 text-center text-stone-500 bg-white rounded-2xl border">
+            Nenhuma venda encontrada para os filtros selecionados.
+          </div>
+        ) : (
+          vendasFiltradas.map((v) => (
+            <div
+              key={v.id}
+              className="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <Link href={`/clientes/${v.clienteId}`} className="font-bold text-stone-900 text-base hover:underline">
+                    {v.cliente.nome}
+                  </Link>
+                  <span className="block text-xs text-stone-500 font-medium">
+                    {formatarDataPtBr(v.data)}
+                  </span>
+                </div>
+
+                <div>
+                  {v.statusCalculado === "PAGO" && (
+                    <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Pago
+                    </span>
+                  )}
+                  {v.statusCalculado === "PARCIAL" && (
+                    <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                      <Clock className="w-3.5 h-3.5" /> Parcial
+                    </span>
+                  )}
+                  {v.statusCalculado === "PENDENTE" && (
+                    <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                      <AlertTriangle className="w-3.5 h-3.5" /> Fiado
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="text-xs text-stone-700 bg-stone-50 p-2.5 rounded-xl border border-stone-100">
+                {v.itens.map((i) => `${i.quantidade}x ${i.produto.nome}`).join(", ")}
+                {v.observacoes && (
+                  <span className="block text-stone-500 italic mt-1">"{v.observacoes}"</span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <div>
+                  <span className="text-[11px] text-stone-500 block uppercase font-bold">Total</span>
+                  <span className="font-black text-stone-900 text-base">
+                    {formatarCentavosParaReal(v.total)}
+                  </span>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-[11px] text-stone-500 block uppercase font-bold">Saldo</span>
+                  {v.saldo > 0 ? (
+                    <span className="font-black text-rose-700 text-base">
+                      {formatarCentavosParaReal(v.saldo)}
+                    </span>
+                  ) : (
+                    <span className="text-emerald-700 font-bold text-xs">Quitado</span>
+                  )}
+                </div>
+              </div>
+
+              {v.saldo > 0 && (
+                <div className="pt-2 border-t flex justify-end">
+                  <ModalPagamentoVenda
+                    vendaId={v.id}
+                    clienteNome={v.cliente.nome}
+                    saldoDevedor={v.saldo}
+                  />
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Visualização Desktop: Tabela Completa */}
+      <div className="hidden md:block bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-stone-50 border-b text-stone-500 font-semibold text-xs">
