@@ -1,33 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { formatarCentavosParaReal } from "@/lib/formatadores";
 import Link from "next/link";
-import { Users, Plus, AlertCircle, Eye, Phone, MapPin } from "lucide-react";
-import { revalidatePath } from "next/cache";
+import { Users, Plus, AlertCircle, Eye, Phone } from "lucide-react";
+import { criarClienteAction } from "@/app/actions/clientes";
+import ModalEditarCliente from "./ModalEditarCliente";
 
 export const dynamic = "force-dynamic";
-
-async function criarClienteAction(formData: FormData) {
-  "use server";
-  const nome = (formData.get("nome") as string)?.trim();
-  const tipo = formData.get("tipo") as "CONSUMIDOR_FINAL" | "REVENDEDOR";
-  const telefone = (formData.get("telefone") as string)?.trim() || null;
-  const endereco = (formData.get("endereco") as string)?.trim() || null;
-  const observacoes = (formData.get("observacoes") as string)?.trim() || null;
-
-  if (!nome) return;
-
-  await prisma.cliente.create({
-    data: {
-      nome,
-      tipo: tipo || "CONSUMIDOR_FINAL",
-      telefone,
-      endereco,
-      observacoes,
-    },
-  });
-
-  revalidatePath("/clientes");
-}
 
 export default async function ClientesPage() {
   const clientes = await prisma.cliente.findMany({
@@ -82,7 +60,10 @@ export default async function ClientesPage() {
             Cadastrar Novo Cliente
           </h2>
 
-          <form action={criarClienteAction} className="space-y-4">
+          <form action={async (formData) => {
+            "use server";
+            await criarClienteAction(formData);
+          }} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
                 Nome do Cliente / Ponto
@@ -195,12 +176,15 @@ export default async function ClientesPage() {
                     </div>
                   </div>
 
-                  <Link
-                    href={`/clientes/${c.id}`}
-                    className="p-2 text-stone-600 hover:text-stone-900 bg-stone-50 rounded-xl"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Link>
+                  <div className="flex items-center gap-1">
+                    <ModalEditarCliente cliente={c} />
+                    <Link
+                      href={`/clientes/${c.id}`}
+                      className="p-1.5 text-stone-600 hover:text-stone-900 bg-stone-50 rounded-lg"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t">
@@ -236,7 +220,7 @@ export default async function ClientesPage() {
                     <th className="pb-3">Tipo</th>
                     <th className="pb-3 text-right">Total Comprado</th>
                     <th className="pb-3 text-right">Saldo Devedor</th>
-                    <th className="pb-3 text-right">Ação</th>
+                    <th className="pb-3 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
@@ -280,12 +264,15 @@ export default async function ClientesPage() {
                         )}
                       </td>
                       <td className="py-3 text-right">
-                        <Link
-                          href={`/clientes/${c.id}`}
-                          className="inline-flex items-center gap-1 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded-lg transition"
-                        >
-                          <Eye className="w-3.5 h-3.5" /> Ver Detalhes
-                        </Link>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <ModalEditarCliente cliente={c} />
+                          <Link
+                            href={`/clientes/${c.id}`}
+                            className="inline-flex items-center gap-1 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1.5 rounded-lg transition"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> Detalhes
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}

@@ -1,43 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { formatarCentavosParaReal } from "@/lib/formatadores";
 import { Cake, Plus, CheckCircle, XCircle } from "lucide-react";
-import { revalidatePath } from "next/cache";
+import { criarProdutoAction, alternarStatusProdutoAction } from "@/app/actions/produtos";
+import ModalEditarProduto from "./ModalEditarProduto";
 
 export const dynamic = "force-dynamic";
-
-async function criarProdutoAction(formData: FormData) {
-  "use server";
-  const nome = (formData.get("nome") as string)?.trim();
-  const precoStr = formData.get("preco") as string;
-  const rendimento = parseInt(formData.get("rendimento") as string) || 1;
-
-  if (!nome || !precoStr) return;
-
-  const precoCentavos = Math.round(parseFloat(precoStr.replace(",", ".")) * 100);
-
-  await prisma.produto.create({
-    data: {
-      nome,
-      precoVenda: precoCentavos,
-      rendimento,
-    },
-  });
-
-  revalidatePath("/produtos");
-}
-
-async function alternarStatusProdutoAction(formData: FormData) {
-  "use server";
-  const id = formData.get("id") as string;
-  const statusAtual = formData.get("ativo") === "true";
-
-  await prisma.produto.update({
-    where: { id },
-    data: { ativo: !statusAtual },
-  });
-
-  revalidatePath("/produtos");
-}
 
 export default async function ProdutosPage() {
   const produtos = await prisma.produto.findMany({
@@ -63,7 +30,10 @@ export default async function ProdutosPage() {
             Cadastrar Novo Produto
           </h2>
 
-          <form action={criarProdutoAction} className="space-y-4">
+          <form action={async (formData) => {
+            "use server";
+            await criarProdutoAction(formData);
+          }} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
                 Nome do Bolo / Sabor
@@ -142,29 +112,19 @@ export default async function ProdutosPage() {
                   </div>
                 </div>
 
-                <div className="text-right space-y-2">
+                <div className="flex items-center gap-2">
+                  <ModalEditarProduto produto={p} />
                   <div>
                     {p.ativo ? (
-                      <span className="text-emerald-700 text-[11px] font-bold bg-emerald-50 px-2.5 py-1 rounded-full">
+                      <span className="text-emerald-700 text-[11px] font-bold bg-emerald-50 px-2 py-0.5 rounded-full">
                         Ativo
                       </span>
                     ) : (
-                      <span className="text-stone-500 text-[11px] font-bold bg-stone-100 px-2.5 py-1 rounded-full">
+                      <span className="text-stone-500 text-[11px] font-bold bg-stone-100 px-2 py-0.5 rounded-full">
                         Inativo
                       </span>
                     )}
                   </div>
-
-                  <form action={alternarStatusProdutoAction}>
-                    <input type="hidden" name="id" value={p.id} />
-                    <input type="hidden" name="ativo" value={p.ativo ? "true" : "false"} />
-                    <button
-                      type="submit"
-                      className="text-xs text-stone-600 hover:text-stone-900 underline font-semibold"
-                    >
-                      {p.ativo ? "Desativar" : "Ativar"}
-                    </button>
-                  </form>
                 </div>
               </div>
             ))}
@@ -179,7 +139,7 @@ export default async function ProdutosPage() {
                     <th className="pb-3">Produto</th>
                     <th className="pb-3 text-right">Preço de Venda</th>
                     <th className="pb-3 text-center">Status</th>
-                    <th className="pb-3 text-right">Ação</th>
+                    <th className="pb-3 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
@@ -208,16 +168,22 @@ export default async function ProdutosPage() {
                         )}
                       </td>
                       <td className="py-3 text-right">
-                        <form action={alternarStatusProdutoAction} className="inline-block">
-                          <input type="hidden" name="id" value={p.id} />
-                          <input type="hidden" name="ativo" value={p.ativo ? "true" : "false"} />
-                          <button
-                            type="submit"
-                            className="text-xs font-bold text-stone-600 hover:text-stone-900 underline"
-                          >
-                            {p.ativo ? "Desativar" : "Ativar"}
-                          </button>
-                        </form>
+                        <div className="flex items-center justify-end gap-2">
+                          <ModalEditarProduto produto={p} />
+                          <form action={async (formData) => {
+                            "use server";
+                            await alternarStatusProdutoAction(formData);
+                          }} className="inline-block">
+                            <input type="hidden" name="id" value={p.id} />
+                            <input type="hidden" name="ativo" value={p.ativo ? "true" : "false"} />
+                            <button
+                              type="submit"
+                              className="text-xs font-bold text-stone-500 hover:text-stone-800 underline"
+                            >
+                              {p.ativo ? "Desativar" : "Ativar"}
+                            </button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   ))}
