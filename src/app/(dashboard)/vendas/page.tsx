@@ -1,0 +1,212 @@
+import { prisma } from "@/lib/prisma";
+import { formatarCentavosParaReal, formatarDataPtBr } from "@/lib/formatadores";
+import Link from "next/link";
+import { ShoppingBag, Plus, Filter, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import ModalPagamentoVenda from "./ModalPagamentoVenda";
+
+export const dynamic = "force-dynamic";
+
+export default async function VendasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; clienteId?: string }>;
+}) {
+  const params = await searchParams;
+  const statusFiltro = params.status;
+  const clienteIdFiltro = params.clienteId;
+
+  const vendas = await prisma.venda.findMany({
+    where: {
+      ...(clienteIdFiltro ? { clienteId: clienteIdFiltro } : {}),
+    },
+    orderBy: { data: "desc" },
+    include: {
+      cliente: true,
+      itens: {
+        include: { produto: true },
+      },
+      pagamentos: true,
+      criadoPor: true,
+    },
+  });
+
+  // Processar totais e status calculados
+  const vendasCalculadas = vendas.map((v) => {
+    const total = v.itens.reduce((acc, i) => acc + i.quantidade * i.precoUnitario, 0);
+    const pago = v.pagamentos.reduce((acc, p) => acc + p.valor, 0);
+    const saldo = Math.max(0, total - pago);
+
+    let statusCalculado: "PAGO" | "PARCIAL" | "PENDENTE" = "PENDENTE";
+    if (pago >= total && total > 0) statusCalculado = "PAGO";
+    else if (pago > 0 && pago < total) statusCalculado = "PARCIAL";
+
+    return {
+      ...v,
+      total,
+      pago,
+      saldo,
+      statusCalculado,
+    };
+  });
+
+  const vendasFiltradas = statusFiltro
+    ? vendasCalculadas.filter((v) => v.statusCalculado === statusFiltro)
+    : vendasCalculadas;
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
+            Vendas e Fiados
+          </h1>
+          <p className="text-sm text-stone-600 mt-1">
+            Histórico completo de pedidos, entregas e controle de recebimentos
+          </p>
+        </div>
+
+        <Link
+          href="/vendas/nova"
+          className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-5 rounded-xl shadow-md transition"
+        >
+          <Plus className="w-5 h-5" />
+          Lançar Venda
+        </Link>
+      </div>
+
+      {/* Filtros de Status */}
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href="/vendas"
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+            !statusFiltro ? "bg-stone-900 text-white" : "bg-white text-stone-700 border hover:bg-stone-50"
+          }`}
+        >
+          Todas as Vendas ({vendasCalculadas.length})
+        </Link>
+        <Link
+          href="/vendas?status=PENDENTE"
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+            statusFiltro === "PENDENTE"
+              ? "bg-rose-700 text-white"
+              : "bg-white text-rose-700 border border-rose-200 hover:bg-rose-50"
+          }`}
+        >
+          Fiado / Pendente ({vendasCalculadas.filter((v) => v.statusCalculado === "PENDENTE").length})
+        </Link>
+        <Link
+          href="/vendas?status=PARCIAL"
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+            statusFiltro === "PARCIAL"
+              ? "bg-amber-600 text-white"
+              : "bg-white text-amber-700 border border-amber-200 hover:bg-amber-50"
+          }`}
+        >
+          Parcial ({vendasCalculadas.filter((v) => v.statusCalculado === "PARCIAL").length})
+        </Link>
+        <Link
+          href="/vendas?status=PAGO"
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+            statusFiltro === "PAGO"
+              ? "bg-emerald-700 text-white"
+              : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50"
+          }`}
+        >
+          Quitadas ({vendasCalculadas.filter((v) => v.statusCalculado === "PAGO").length})
+        </Link>
+      </div>
+
+      {/* Tabela de Vendas */}
+      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-stone-50 border-b text-stone-500 font-semibold text-xs">
+              <tr>
+                <th className="p-4">Data</th>
+                <th className="p-4">Cliente</th>
+                <th className="p-4">Bolos / Itens</th>
+                <th className="p-4 text-right">Total</th>
+                <th className="p-4 text-right">Saldo Devedor</th>
+                <th className="p-4 text-center">Status</th>
+                <th className="p-4 text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100">
+              {vendasFiltradas.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-stone-500">
+                    Nenhuma venda encontrada para os filtros selecionados.
+                  </td>
+                </tr>
+              ) : (
+                vendasFiltradas.map((v) => (
+                  <tr key={v.id} className="hover:bg-stone-50">
+                    <td className="p-4 text-stone-900 font-medium">
+                      {formatarDataPtBr(v.data)}
+                      {v.dataPrevistaPgto && (
+                        <span className="block text-xs text-rose-600 font-normal">
+                          Previsto: {formatarDataPtBr(v.dataPrevistaPgto)}
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 font-bold text-stone-900">
+                      <Link href={`/clientes/${v.clienteId}`} className="hover:underline">
+                        {v.cliente.nome}
+                      </Link>
+                    </td>
+                    <td className="p-4 text-xs text-stone-700 max-w-xs">
+                      {v.itens.map((i) => `${i.quantidade}x ${i.produto.nome}`).join(", ")}
+                      {v.observacoes && (
+                        <span className="block text-stone-500 italic mt-0.5">
+                          "{v.observacoes}"
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 text-right font-black text-stone-900">
+                      {formatarCentavosParaReal(v.total)}
+                    </td>
+                    <td className="p-4 text-right">
+                      {v.saldo > 0 ? (
+                        <span className="font-black text-rose-700">
+                          {formatarCentavosParaReal(v.saldo)}
+                        </span>
+                      ) : (
+                        <span className="text-emerald-700 font-bold text-xs">Quitado</span>
+                      )}
+                    </td>
+                    <td className="p-4 text-center">
+                      {v.statusCalculado === "PAGO" && (
+                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Pago
+                        </span>
+                      )}
+                      {v.statusCalculado === "PARCIAL" && (
+                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                          <Clock className="w-3.5 h-3.5" /> Parcial
+                        </span>
+                      )}
+                      {v.statusCalculado === "PENDENTE" && (
+                        <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                          <AlertTriangle className="w-3.5 h-3.5" /> Fiado
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 text-right">
+                      {v.saldo > 0 && (
+                        <ModalPagamentoVenda
+                          vendaId={v.id}
+                          clienteNome={v.cliente.nome}
+                          saldoDevedor={v.saldo}
+                        />
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
