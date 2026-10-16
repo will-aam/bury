@@ -39,18 +39,8 @@ export async function criarVendaRapidaAction(input: CriarVendaInput) {
     const fichas = await prisma.fichaTecnica.findMany({
       where: { produtoId: { in: produtosIds } },
       include: {
-        itens: {
-          include: {
-            ingrediente: {
-              include: {
-                historicoPrecos: {
-                  orderBy: { dataRegistro: "desc" },
-                  take: 1,
-                },
-              },
-            },
-          },
-        },
+        produto: { select: { rendimento: true } },
+        itens: true,
       },
     });
 
@@ -59,12 +49,10 @@ export async function criarVendaRapidaAction(input: CriarVendaInput) {
     for (const ficha of fichas) {
       let custoTotalFicha = 0;
       for (const item of ficha.itens) {
-        const precoRecente = item.ingrediente.historicoPrecos[0];
-        if (precoRecente) {
-          custoTotalFicha += item.quantidade * precoRecente.custoUnidadeBase;
-        }
+        custoTotalFicha += item.custoCalculado || 0;
       }
-      mapaCustos[ficha.produtoId] = Math.round(custoTotalFicha);
+      const rend = ficha.produto.rendimento > 0 ? ficha.produto.rendimento : 1;
+      mapaCustos[ficha.produtoId] = Math.round(custoTotalFicha / rend);
     }
 
     // Criar Venda com Itens e Pagamento em transação

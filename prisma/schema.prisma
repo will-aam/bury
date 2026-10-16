@@ -210,12 +210,17 @@ model FichaTecnica {
 }
 
 model ItemFicha {
-  id             String       @id @default(cuid())
-  fichaTecnicaId String
-  fichaTecnica   FichaTecnica @relation(fields: [fichaTecnicaId], references: [id], onDelete: Cascade)
-  ingredienteId  String
-  ingrediente    Ingrediente  @relation(fields: [ingredienteId], references: [id])
-  quantidade     Float        // Na unidade base
+  id               String        @id @default(cuid())
+  fichaTecnicaId   String
+  fichaTecnica     FichaTecnica  @relation(fields: [fichaTecnicaId], references: [id], onDelete: Cascade)
+  nomeInsumo       String        // Nome do insumo / ingrediente
+  unidadeMedida    String        @default("KG") // "KG" ou "UNIDADE"
+  precoEmbalagem   Int           @default(0)    // Preço do produto inteiro em centavos (ex: R$ 5,00 = 500)
+  tamanhoEmbalagem Float         @default(1.0)  // Tamanho total do pacote (ex: 1 kg ou 1 un)
+  quantidade       Float         @default(0.0)  // Quantidade utilizada na receita (ex: 0.5 kg ou 2 un)
+  custoCalculado   Int           @default(0)    // Custo proporcional do item na receita em centavos
+  ingredienteId    String?
+  ingrediente      Ingrediente?  @relation(fields: [ingredienteId], references: [id])
 }
 
 model FichaCustoAdicional {

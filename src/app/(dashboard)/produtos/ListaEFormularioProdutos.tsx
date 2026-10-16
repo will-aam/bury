@@ -16,9 +16,11 @@ import {
   ChevronRight,
   Filter,
   Edit2,
+  FileSpreadsheet,
 } from "lucide-react";
 import { criarProdutoAction, alternarStatusProdutoAction } from "@/app/actions/produtos";
 import ModalEditarProduto from "./ModalEditarProduto";
+import ModalFichaTecnica, { FichaTecnicaData } from "./ModalFichaTecnica";
 
 interface Produto {
   id: string;
@@ -27,6 +29,7 @@ interface Produto {
   precoSecundario: number;
   rendimento: number;
   ativo: boolean;
+  fichaTecnica?: FichaTecnicaData | null;
 }
 
 export default function ListaEFormularioProdutos({
@@ -390,6 +393,7 @@ export default function ListaEFormularioProdutos({
                 <tr>
                   <th className="py-3.5 px-4 sm:px-6">Produto / Sabor</th>
                   <th className="py-3.5 px-3 text-center">Rendimento</th>
+                  <th className="py-3.5 px-4 text-right">Custo (Ficha)</th>
                   <th className="py-3.5 px-4 text-right">Preço Padrão (Varejo)</th>
                   <th className="py-3.5 px-4 text-right">Preço Diferenciado (Atacado)</th>
                   <th className="py-3.5 px-3 text-center">Status</th>
@@ -398,7 +402,8 @@ export default function ListaEFormularioProdutos({
               </thead>
               <tbody className="divide-y divide-stone-100">
                 {produtosPaginados.map((p) => {
-                  const temDiferenca = p.precoSecundario && p.precoSecundario !== p.precoVenda;
+                  const custoTotalFicha = p.fichaTecnica?.itens?.reduce((acc, i) => acc + (i.custoCalculado || 0), 0) || 0;
+                  const custoUnitario = p.rendimento > 0 ? Math.round(custoTotalFicha / p.rendimento) : custoTotalFicha;
 
                   return (
                     <tr
@@ -418,6 +423,22 @@ export default function ListaEFormularioProdutos({
                           <Layers className="w-3 h-3 text-stone-400" />
                           {p.rendimento} un
                         </span>
+                      </td>
+
+                      {/* Custo Calculado da Ficha Técnica */}
+                      <td className="py-3.5 px-4 text-right">
+                        {custoUnitario > 0 ? (
+                          <div className="font-extrabold text-stone-900 text-sm">
+                            {formatarCentavosParaReal(custoUnitario)}
+                            <span className="text-[10px] text-stone-400 font-normal block">
+                              por unidade
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-stone-400 text-xs italic">
+                            Sem ficha
+                          </span>
+                        )}
                       </td>
 
                       {/* Preço Padrão */}
@@ -449,7 +470,10 @@ export default function ListaEFormularioProdutos({
                       <td className="py-3.5 px-4 sm:px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {p.ativo ? (
-                            <ModalEditarProduto produto={p} />
+                            <>
+                              <ModalFichaTecnica produto={p} />
+                              <ModalEditarProduto produto={p} />
+                            </>
                           ) : (
                             <span
                               className="p-1.5 text-stone-300 cursor-not-allowed rounded-lg inline-block"

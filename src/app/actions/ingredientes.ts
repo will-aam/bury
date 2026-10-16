@@ -5,39 +5,36 @@ import { revalidatePath } from "next/cache";
 
 export async function criarIngredienteAction(formData: FormData) {
   const nome = (formData.get("nome") as string)?.trim();
-  const unidadeBase = formData.get("unidadeBase") as any;
-  const unidadeCompra = formData.get("unidadeCompra") as any;
-  const tamanhoEmbalagem = parseFloat(formData.get("tamanhoEmbalagem") as string) || 1;
-  const precoEmbalagemStr = formData.get("precoEmbalagem") as string;
+  const unidadeMedida = (formData.get("unidadeMedida") || formData.get("unidadeCompra") || "KG") as string;
+  const quantidade = parseFloat((formData.get("quantidade") || formData.get("tamanhoEmbalagem") || "1") as string) || 1;
+  const precoStr = (formData.get("preco") || formData.get("precoEmbalagem") || "") as string;
 
-  if (!nome || !precoEmbalagemStr) {
-    return { erro: "Nome e preço da embalagem são obrigatórios." };
+  if (!nome || !precoStr) {
+    return { erro: "Nome e custo são obrigatórios." };
   }
 
-  const precoEmbalagemCentavos = Math.round(parseFloat(precoEmbalagemStr.replace(",", ".")) * 100);
+  const precoCentavos = Math.round(parseFloat(precoStr.replace(",", ".")) * 100);
+  const unidadeBase = unidadeMedida === "UNIDADE" ? "UNIDADE" : "GRAMA";
+  const unidadeCompra = unidadeMedida === "UNIDADE" ? "UNIDADE" : "KG";
 
-  let fatorMultiplicador = 1;
-  if (unidadeCompra === "KG" && unidadeBase === "GRAMA") fatorMultiplicador = 1000;
-  if (unidadeCompra === "L" && unidadeBase === "MILILITRO") fatorMultiplicador = 1000;
-
-  const totalUnidadesBase = tamanhoEmbalagem * fatorMultiplicador;
-  const custoUnidadeBase = precoEmbalagemCentavos / totalUnidadesBase;
+  const totalUnidadesBase = unidadeCompra === "KG" ? quantidade * 1000 : quantidade;
+  const custoUnidadeBase = precoCentavos / (totalUnidadesBase > 0 ? totalUnidadesBase : 1);
 
   try {
     await prisma.$transaction(async (tx) => {
       const ing = await tx.ingrediente.create({
         data: {
           nome,
-          unidadeBase,
+          unidadeBase: unidadeBase as any,
         },
       });
 
       await tx.precoIngrediente.create({
         data: {
           ingredienteId: ing.id,
-          unidadeCompra,
-          tamanhoEmbalagem,
-          precoEmbalagem: precoEmbalagemCentavos,
+          unidadeCompra: unidadeCompra as any,
+          tamanhoEmbalagem: quantidade,
+          precoEmbalagem: precoCentavos,
           custoUnidadeBase,
         },
       });
@@ -47,32 +44,29 @@ export async function criarIngredienteAction(formData: FormData) {
     return { sucesso: true };
   } catch (error: any) {
     if (error.code === "P2002") {
-      return { erro: "Já existe um ingrediente com este nome." };
+      return { erro: "Já existe um insumo com este nome." };
     }
-    return { erro: "Erro ao cadastrar ingrediente." };
+    return { erro: "Erro ao cadastrar insumo." };
   }
 }
 
 export async function editarIngredienteAction(formData: FormData) {
   const id = formData.get("id") as string;
   const nome = (formData.get("nome") as string)?.trim();
-  const unidadeBase = formData.get("unidadeBase") as any;
-  const unidadeCompra = formData.get("unidadeCompra") as any;
-  const tamanhoEmbalagem = parseFloat(formData.get("tamanhoEmbalagem") as string) || 1;
-  const precoEmbalagemStr = formData.get("precoEmbalagem") as string;
+  const unidadeMedida = (formData.get("unidadeMedida") || formData.get("unidadeCompra") || "KG") as string;
+  const quantidade = parseFloat((formData.get("quantidade") || formData.get("tamanhoEmbalagem") || "1") as string) || 1;
+  const precoStr = (formData.get("preco") || formData.get("precoEmbalagem") || "") as string;
 
-  if (!id || !nome || !precoEmbalagemStr) {
+  if (!id || !nome || !precoStr) {
     return { erro: "Dados incompletos." };
   }
 
-  const precoEmbalagemCentavos = Math.round(parseFloat(precoEmbalagemStr.replace(",", ".")) * 100);
+  const precoCentavos = Math.round(parseFloat(precoStr.replace(",", ".")) * 100);
+  const unidadeBase = unidadeMedida === "UNIDADE" ? "UNIDADE" : "GRAMA";
+  const unidadeCompra = unidadeMedida === "UNIDADE" ? "UNIDADE" : "KG";
 
-  let fatorMultiplicador = 1;
-  if (unidadeCompra === "KG" && unidadeBase === "GRAMA") fatorMultiplicador = 1000;
-  if (unidadeCompra === "L" && unidadeBase === "MILILITRO") fatorMultiplicador = 1000;
-
-  const totalUnidadesBase = tamanhoEmbalagem * fatorMultiplicador;
-  const custoUnidadeBase = precoEmbalagemCentavos / totalUnidadesBase;
+  const totalUnidadesBase = unidadeCompra === "KG" ? quantidade * 1000 : quantidade;
+  const custoUnidadeBase = precoCentavos / (totalUnidadesBase > 0 ? totalUnidadesBase : 1);
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -80,17 +74,16 @@ export async function editarIngredienteAction(formData: FormData) {
         where: { id },
         data: {
           nome,
-          unidadeBase,
+          unidadeBase: unidadeBase as any,
         },
       });
 
-      // Cria um novo registro de preço preservando o histórico de compras e variações de preço
       await tx.precoIngrediente.create({
         data: {
           ingredienteId: id,
-          unidadeCompra,
-          tamanhoEmbalagem,
-          precoEmbalagem: precoEmbalagemCentavos,
+          unidadeCompra: unidadeCompra as any,
+          tamanhoEmbalagem: quantidade,
+          precoEmbalagem: precoCentavos,
           custoUnidadeBase,
         },
       });
@@ -100,9 +93,9 @@ export async function editarIngredienteAction(formData: FormData) {
     return { sucesso: true };
   } catch (error: any) {
     if (error.code === "P2002") {
-      return { erro: "Já existe outro ingrediente com este nome." };
+      return { erro: "Já existe outro insumo com este nome." };
     }
-    return { erro: "Erro ao editar ingrediente." };
+    return { erro: "Erro ao editar insumo." };
   }
 }
 

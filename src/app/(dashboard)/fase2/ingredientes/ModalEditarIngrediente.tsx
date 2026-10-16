@@ -179,65 +179,51 @@ export default function ModalEditarIngrediente({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                      Unidade Base
+                      Unidade de Medida
                     </label>
                     <select
-                      value={unidadeBase}
-                      onChange={(e) => setUnidadeBase(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-xl text-sm font-medium text-stone-900"
-                    >
-                      <option value="GRAMA">Grama (g)</option>
-                      <option value="MILILITRO">Mililitro (ml)</option>
-                      <option value="UNIDADE">Unidade (un)</option>
-                      <option value="GOTA">Gota</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                      Unidade de Compra
-                    </label>
-                    <select
-                      value={unidadeCompra}
-                      onChange={(e) => setUnidadeCompra(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-xl text-sm font-medium text-stone-900"
+                      value={unidadeCompra === "UNIDADE" ? "UNIDADE" : "KG"}
+                      onChange={(e) => {
+                        setUnidadeCompra(e.target.value);
+                        setUnidadeBase(e.target.value === "UNIDADE" ? "UNIDADE" : "GRAMA");
+                      }}
+                      className="w-full px-3 py-2 border rounded-xl text-sm font-bold text-stone-900 bg-white"
                     >
                       <option value="KG">Quilo (kg)</option>
-                      <option value="G">Grama (g)</option>
-                      <option value="L">Litro (l)</option>
-                      <option value="ML">Mililitro (ml)</option>
                       <option value="UNIDADE">Unidade (un)</option>
                     </select>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                      Tam. Embalagem
+                      Quantidade
                     </label>
                     <input
                       type="number"
-                      step="0.01"
+                      step="0.001"
                       required
                       value={tamanhoEmbalagem}
                       onChange={(e) => setTamanhoEmbalagem(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-xl text-sm text-stone-900"
+                      className="w-full px-3 py-2 border rounded-xl text-sm text-stone-900 font-medium"
                     />
+                    <span className="text-[10px] text-stone-400 mt-0.5 block">Ex: 1 kg ou 30 un</span>
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                      Novo Preço Embalagem (R$)
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={precoEmbalagem}
-                      onChange={(e) => setPrecoEmbalagem(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-xl text-sm font-bold text-amber-900 bg-amber-50/40 focus:ring-2 focus:ring-amber-500 outline-none"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
+                    Custo (R$)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={precoEmbalagem}
+                    onChange={(e) => setPrecoEmbalagem(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-xl text-sm font-black text-amber-900 bg-amber-50/40 focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                  <p className="text-[10px] text-stone-500 mt-0.5">
+                    Valor total pago por essa quantidade do insumo.
+                  </p>
                 </div>
 
                 {/* Card de Simulação e Variação */}

@@ -6,6 +6,13 @@ export const dynamic = "force-dynamic";
 export default async function ProdutosPage() {
   const produtos = await prisma.produto.findMany({
     orderBy: { nome: "asc" },
+    include: {
+      fichaTecnica: {
+        include: {
+          itens: true,
+        },
+      },
+    },
   });
 
   return (
