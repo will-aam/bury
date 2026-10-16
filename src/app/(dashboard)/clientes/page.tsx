@@ -56,7 +56,7 @@ export default async function ClientesPage() {
         {/* Formulário Novo Cliente */}
         <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-sm h-fit">
           <h2 className="text-base sm:text-lg font-bold text-stone-900 mb-4 flex items-center gap-2">
-            <Plus className="w-5 h-5 text-amber-600" />
+            <Plus className="w-5 h-5 text-stone-700" />
             Cadastrar Novo Cliente
           </h2>
 
@@ -73,7 +73,7 @@ export default async function ClientesPage() {
                 name="nome"
                 required
                 placeholder="Ex: Mercearia do Zé ou Maria"
-                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
               />
             </div>
 
@@ -84,7 +84,7 @@ export default async function ClientesPage() {
               <select
                 name="tipo"
                 defaultValue="CONSUMIDOR_FINAL"
-                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
               >
                 <option value="CONSUMIDOR_FINAL">Consumidor Final (Direto)</option>
                 <option value="REVENDEDOR">Revendedor (Recorrente)</option>
@@ -99,7 +99,7 @@ export default async function ClientesPage() {
                 type="text"
                 name="telefone"
                 placeholder="(00) 00000-0000"
-                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
               />
             </div>
 
@@ -111,7 +111,7 @@ export default async function ClientesPage() {
                 type="text"
                 name="endereco"
                 placeholder="Rua, número, bairro"
-                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
               />
             </div>
 
@@ -123,13 +123,13 @@ export default async function ClientesPage() {
                 name="observacoes"
                 rows={2}
                 placeholder="Ex: Entrega terças e sextas..."
-                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow"
+              className="w-full bg-stone-900 hover:bg-black text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow"
             >
               Salvar Cliente
             </button>
@@ -140,7 +140,7 @@ export default async function ClientesPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base sm:text-lg font-bold text-stone-900 flex items-center gap-2">
-              <Users className="w-5 h-5 text-amber-600" />
+              <Users className="w-5 h-5 text-stone-700" />
               Lista de Clientes ({clientesComMetricas.length})
             </h2>
           </div>

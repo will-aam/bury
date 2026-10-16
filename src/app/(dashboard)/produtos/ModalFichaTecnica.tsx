@@ -186,15 +186,15 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
     <>
       <button
         onClick={() => setAberto(true)}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition border ${
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition ${
           temFichaPronta
-            ? "bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100"
-            : "bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100"
+            ? "bg-stone-100 text-stone-900 border-stone-300 hover:bg-stone-200"
+            : "bg-white text-stone-600 border-stone-200 hover:bg-stone-50"
         }`}
         title="Montar ou Editar Ficha Técnica e Custos"
       >
-        <FileText className="w-3.5 h-3.5 text-amber-600" />
-        {temFichaPronta ? "Ficha Técnica" : "+ Ficha Técnica"}
+        <FileText className="w-3.5 h-3.5 text-stone-600" />
+        {temFichaPronta ? "Ficha Técnica" : "+ Ficha"}
       </button>
 
       {aberto && (
@@ -203,9 +203,9 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
             {/* Topo do Modal */}
             <div className="flex items-center justify-between pb-3 border-b border-stone-200">
               <div>
-                <h3 className="font-extrabold text-stone-900 text-lg flex items-center gap-2">
-                  <Calculator className="w-5 h-5 text-amber-600" />
-                  Ficha Técnica & Custo de Produção
+                <h3 className="font-bold text-stone-900 text-base flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-stone-900" />
+                  Ficha Técnica & Custo
                 </h3>
                 <p className="text-xs text-stone-500 mt-0.5">
                   Produto: <strong className="text-stone-800">{produto.nome}</strong> • Rendimento da receita:{" "}
@@ -237,11 +237,11 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
 
             {/* Conteúdo com scroll */}
             <form onSubmit={handleSalvar} className="flex-1 overflow-y-auto my-3 pr-1 space-y-4">
-              <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-200/60 text-xs text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div className="bg-stone-100 p-3 rounded-xl border border-stone-200 text-xs text-stone-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div>
                   <strong>Como funciona o cálculo:</strong> Para cada insumo, informe o preço que você pagou no produto inteiro (ex: 1 kg por R$ 5,00) e a quantidade gasta na receita (ex: 0,5 kg).
                 </div>
-                <div className="font-semibold text-amber-800 shrink-0">
+                <div className="font-semibold text-stone-700 shrink-0">
                   Unidades suportadas: <strong>Quilo (kg)</strong> e <strong>Unidade (un)</strong>
                 </div>
               </div>
@@ -265,7 +265,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                       const calc = itensCalculados[idx];
 
                       return (
-                        <tr key={idx} className="hover:bg-amber-50/20">
+                        <tr key={idx} className="hover:bg-stone-50">
                           {/* Nome Insumo */}
                           <td className="p-2">
                             <input
@@ -274,7 +274,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                               placeholder="Ex: Farinha de Trigo"
                               value={item.nomeInsumo}
                               onChange={(e) => atualizarItem(idx, "nomeInsumo", e.target.value)}
-                              className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-900 focus:ring-1 focus:ring-amber-500 outline-none"
+                              className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
                             />
                           </td>
 
@@ -285,7 +285,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                               onChange={(e) =>
                                 atualizarItem(idx, "unidadeMedida", e.target.value as "KG" | "UNIDADE")
                               }
-                              className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-amber-500 outline-none"
+                              className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-stone-900 outline-none"
                             >
                               <option value="KG">Quilo (kg)</option>
                               <option value="UNIDADE">Unidade (un)</option>
@@ -300,7 +300,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                               placeholder="Ex: 5,00"
                               value={item.precoEmbalagemStr}
                               onChange={(e) => atualizarItem(idx, "precoEmbalagemStr", e.target.value)}
-                              className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-bold text-stone-900 focus:ring-1 focus:ring-amber-500 outline-none"
+                              className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-bold text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
                             />
                           </td>
 
@@ -313,7 +313,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                                 placeholder="Ex: 1"
                                 value={item.tamanhoEmbalagemStr}
                                 onChange={(e) => atualizarItem(idx, "tamanhoEmbalagemStr", e.target.value)}
-                                className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-medium text-stone-800 focus:ring-1 focus:ring-amber-500 outline-none"
+                                className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-medium text-stone-800 focus:ring-1 focus:ring-stone-900 outline-none"
                               />
                               <span className="text-[10px] text-stone-400 font-bold">
                                 {item.unidadeMedida === "KG" ? "kg" : "un"}
@@ -330,16 +330,16 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                                 placeholder={item.unidadeMedida === "KG" ? "Ex: 0.5" : "Ex: 3"}
                                 value={item.quantidadeStr}
                                 onChange={(e) => atualizarItem(idx, "quantidadeStr", e.target.value)}
-                                className="w-full px-2 py-1.5 bg-amber-50/50 border border-amber-300 rounded-lg text-xs font-bold text-amber-950 focus:ring-1 focus:ring-amber-500 outline-none"
+                                className="w-full px-2 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-bold text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
                               />
-                              <span className="text-[10px] text-amber-800 font-bold">
+                              <span className="text-[10px] text-stone-600 font-bold">
                                 {item.unidadeMedida === "KG" ? "kg" : "un"}
                               </span>
                             </div>
                           </td>
 
                           {/* Custo Calculado Automático */}
-                          <td className="p-2 text-right font-black text-amber-950 text-xs">
+                          <td className="p-2 text-right font-black text-stone-900 text-xs">
                             {formatarCentavosParaReal(calc?.custoItemCentavos || 0)}
                           </td>
 
@@ -367,7 +367,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
               <button
                 type="button"
                 onClick={adicionarLinha}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-900 bg-amber-50 hover:bg-amber-100/80 px-3 py-2 rounded-xl transition border border-amber-200/80"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-800 hover:text-stone-950 bg-stone-100 hover:bg-stone-200 px-3 py-2 rounded-xl transition border border-stone-200"
               >
                 <Plus className="w-3.5 h-3.5" /> Adicionar Insumo / Ingrediente
               </button>
@@ -380,7 +380,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                     Volume / Peso Total da Receita
                   </span>
                   <div className="text-base sm:text-lg font-black text-stone-900 mt-1 flex items-center gap-1.5">
-                    <Scale className="w-4 h-4 text-amber-600" />
+                    <Scale className="w-4 h-4 text-stone-700" />
                     {todosMesmaUnidade ? (
                       <span>
                         {somaVolumeTotal.toLocaleString("pt-BR", { maximumFractionDigits: 3 })}{" "}
@@ -413,14 +413,14 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                 </div>
 
                 {/* Custo Unitário Final do Produto */}
-                <div className="bg-amber-100/70 p-3 rounded-lg border border-amber-300">
-                  <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">
+                <div className="bg-stone-900 text-white p-3 rounded-lg border border-stone-900">
+                  <span className="text-[10px] font-bold text-stone-300 uppercase tracking-wider block">
                     Custo Unitário do Produto
                   </span>
-                  <div className="text-lg sm:text-xl font-black text-amber-950 mt-1">
+                  <div className="text-lg sm:text-xl font-black text-white mt-1">
                     {formatarCentavosParaReal(custoUnitarioCentavos)}
                   </div>
-                  <span className="text-[11px] text-amber-800 font-semibold">
+                  <span className="text-[11px] text-stone-300 font-semibold">
                     Custo base por unidade produzida
                   </span>
                 </div>
@@ -444,9 +444,9 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                 {custoUnitarioCentavos > 0 && produto.precoVenda > 0 && (
                   <div className="text-right sm:text-right">
                     <span className="text-[10px] text-stone-500 block">Margem Bruta (Preço Padrão):</span>
-                    <span className="font-black text-sm text-emerald-700">
+                    <span className="font-black text-sm text-stone-900">
                       {formatarCentavosParaReal(produto.precoVenda - custoUnitarioCentavos)}{" "}
-                      <span className="text-xs font-bold text-stone-600">
+                      <span className="text-xs font-bold text-stone-500">
                         ({Math.round(((produto.precoVenda - custoUnitarioCentavos) / produto.precoVenda) * 100)}%)
                       </span>
                     </span>
@@ -464,7 +464,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
                   placeholder="Ex: Tempo de forno 45min a 180°C..."
-                  className="w-full px-3 py-2 border rounded-xl text-xs text-stone-900 focus:ring-1 focus:ring-amber-500 outline-none"
+                  className="w-full px-3 py-2 border rounded-xl text-xs text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
                 />
               </div>
 
@@ -480,7 +480,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2.5 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5"
                 >
                   {isPending ? "Salvando Ficha..." : "Salvar Ficha Técnica & Atualizar Custo"}
                 </button>

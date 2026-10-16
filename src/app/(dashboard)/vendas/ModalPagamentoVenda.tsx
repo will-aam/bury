@@ -61,7 +61,7 @@ export default function ModalPagamentoVenda({
               </button>
             </div>
 
-            <div className="my-4 p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
+            <div className="my-4 p-3 bg-stone-100 rounded-xl border border-stone-200 text-xs text-stone-800">
               Saldo em aberto desta venda:{" "}
               <strong className="text-sm font-black text-rose-700">
                 {formatarCentavosParaReal(saldoDevedor)}
@@ -84,7 +84,7 @@ export default function ModalPagamentoVenda({
                   required
                   value={valor}
                   onChange={(e) => setValor(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-xl font-bold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none text-base"
+                  className="w-full px-3 py-2 border rounded-xl font-bold text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none text-base"
                 />
               </div>
 

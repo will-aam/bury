@@ -72,7 +72,7 @@ export default function ModalEditarCliente({
     <>
       <button
         onClick={() => setAberto(true)}
-        className="p-1.5 text-stone-600 hover:text-amber-800 hover:bg-stone-100 rounded-lg transition"
+        className="p-1.5 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition"
         title="Editar Cliente"
       >
         <Edit2 className="w-4 h-4" />
@@ -104,7 +104,7 @@ export default function ModalEditarCliente({
                   required
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                  className="w-full px-3 py-2 border rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
                 />
               </div>
 
@@ -169,7 +169,7 @@ export default function ModalEditarCliente({
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold shadow transition"
+                  className="flex-1 py-2.5 bg-stone-900 hover:bg-black text-white rounded-xl text-sm font-bold shadow transition"
                 >
                   {isPending ? "Salvando..." : "Salvar Alterações"}
                 </button>

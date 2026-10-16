@@ -3,23 +3,9 @@
 import { useState, useTransition } from "react";
 import { formatarCentavosParaReal } from "@/lib/formatadores";
 import {
-  Wheat,
-  FileSpreadsheet,
   Plus,
-  Sliders,
-  Scale,
-  Layers,
-  Search,
-  CheckCircle2,
-  AlertCircle,
-  Cake,
   Trash2,
-  Save,
-  Check,
   ChevronDown,
-  Info,
-  DollarSign,
-  TrendingUp,
 } from "lucide-react";
 import { criarIngredienteAction } from "@/app/actions/ingredientes";
 import { salvarFichaTecnicaAction } from "@/app/actions/fichaTecnica";
@@ -96,13 +82,11 @@ export default function GestaoIngredientesEFichas({
 
   const produtoSelecionado = produtos.find((p) => p.id === produtoSelecionadoId) || produtos[0];
 
-  // Helper para inicializar linhas da ficha técnica a partir dos itens salvos
   const carregarLinhasDoProduto = (prod: ProdutoComFicha | undefined): ItemFichaRow[] => {
     if (!prod?.fichaTecnica?.itens?.length) {
       return [];
     }
     return prod.fichaTecnica.itens.map((item) => {
-      // Tentar associar com ingrediente cadastrado pelo nome
       const ingCorrespondente = ingredientes.find(
         (i) => i.nome.trim().toLowerCase() === item.nomeInsumo.trim().toLowerCase()
       );
@@ -122,7 +106,6 @@ export default function GestaoIngredientesEFichas({
   const [isPendingFicha, startTransitionFicha] = useTransition();
   const [msgFicha, setMsgFicha] = useState<{ tipo: "sucesso" | "erro"; texto: string } | null>(null);
 
-  // Troca de produto selecionado
   const selecionarProdutoParaEditar = (prod: ProdutoComFicha) => {
     setProdutoSelecionadoId(prod.id);
     setMsgFicha(null);
@@ -130,7 +113,6 @@ export default function GestaoIngredientesEFichas({
     setItensFicha(carregarLinhasDoProduto(prod));
   };
 
-  // Adicionar um insumo já cadastrado na receita
   const adicionarInsumoCadastrado = (ingredienteId: string) => {
     if (!ingredienteId) return;
     const ing = ingredientes.find((i) => i.id === ingredienteId);
@@ -154,7 +136,6 @@ export default function GestaoIngredientesEFichas({
     ]);
   };
 
-  // Trocar o insumo de uma linha existente
   const trocarInsumoDaLinha = (index: number, novoIngredienteId: string) => {
     const ing = ingredientes.find((i) => i.id === novoIngredienteId);
     if (!ing) return;
@@ -190,7 +171,7 @@ export default function GestaoIngredientesEFichas({
     });
   };
 
-  // Cálculos em tempo real da ficha técnica
+  // Cálculos
   const calculosFicha = itensFicha.map((item) => {
     const precoCentavos = Math.round(parseFloat(item.precoEmbalagemStr.replace(",", ".")) * 100) || 0;
     const tamanho = parseFloat(item.tamanhoEmbalagemStr.replace(",", ".")) || 1;
@@ -199,14 +180,11 @@ export default function GestaoIngredientesEFichas({
     const proporcao = tamanho > 0 ? quantidade / tamanho : 0;
     const custoCalculado = Math.round(precoCentavos * proporcao);
 
-    const custoUnitarioInsumo = tamanho > 0 ? precoCentavos / tamanho : precoCentavos;
-
     return {
       precoCentavos,
       tamanho,
       quantidade,
       custoCalculado,
-      custoUnitarioInsumo,
       unidadeMedida: item.unidadeMedida,
     };
   });
@@ -215,7 +193,6 @@ export default function GestaoIngredientesEFichas({
   const rendimento = produtoSelecionado?.rendimento || 1;
   const custoUnitario = rendimento > 0 ? Math.round(custoTotalReceita / rendimento) : custoTotalReceita;
 
-  // Soma de volume / quantidade
   const totalKg = calculosFicha
     .filter((c) => c.unidadeMedida === "KG")
     .reduce((acc, c) => acc + c.quantidade, 0);
@@ -224,10 +201,6 @@ export default function GestaoIngredientesEFichas({
     .filter((c) => c.unidadeMedida === "UNIDADE")
     .reduce((acc, c) => acc + c.quantidade, 0);
 
-  const todosSaoKg = calculosFicha.every((c) => c.unidadeMedida === "KG" || c.quantidade === 0);
-  const todosSaoUn = calculosFicha.every((c) => c.unidadeMedida === "UNIDADE" || c.quantidade === 0);
-
-  // Salvar Ficha Técnica
   const handleSalvarFicha = () => {
     if (!produtoSelecionado) return;
     setMsgFicha(null);
@@ -250,9 +223,9 @@ export default function GestaoIngredientesEFichas({
     startTransitionFicha(async () => {
       const res = await salvarFichaTecnicaAction(produtoSelecionado.id, itensValidos, obsFicha);
       if (res.sucesso) {
-        setMsgFicha({ tipo: "sucesso", texto: "Ficha técnica salva com sucesso!" });
+        setMsgFicha({ tipo: "sucesso", texto: "Ficha salva com sucesso." });
       } else {
-        setMsgFicha({ tipo: "erro", texto: res.erro || "Erro ao salvar ficha técnica." });
+        setMsgFicha({ tipo: "erro", texto: res.erro || "Erro ao salvar." });
       }
     });
   };
@@ -262,453 +235,63 @@ export default function GestaoIngredientesEFichas({
   );
 
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto">
-      {/* Cabeçalho Superior com Navegação em Abas */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200">
+    <div className="space-y-6 max-w-6xl mx-auto">
+      {/* Topo Limpo e Minimalista */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2.5">
-            <Sliders className="w-8 h-8 text-amber-600" />
-            Ingredientes & Fichas Técnicas
+          <h1 className="text-xl font-bold text-stone-900 tracking-tight">
+            Ingredientes e Fichas
           </h1>
-          <p className="text-sm text-stone-600 mt-1">
-            Gerencie os insumos cadastrados e componha as receitas selecionando os itens para cálculo automático de custo.
+          <p className="text-xs text-stone-500 mt-0.5">
+            Cadastre os insumos e vincule o consumo de cada produto.
           </p>
         </div>
 
-        {/* Abas Alternadoras */}
-        <div className="inline-flex p-1.5 bg-stone-200/90 rounded-2xl border border-stone-300 shadow-xs self-start sm:self-auto">
+        {/* Abas Minimalistas */}
+        <div className="inline-flex border-b border-stone-200 gap-6 text-sm">
           <button
             onClick={() => setAbaAtiva("ingredientes")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`pb-2 font-medium transition-colors ${
               abaAtiva === "ingredientes"
-                ? "bg-white text-stone-950 shadow-sm"
-                : "text-stone-600 hover:text-stone-900"
+                ? "border-b-2 border-stone-900 text-stone-900 font-semibold"
+                : "text-stone-500 hover:text-stone-800"
             }`}
           >
-            <Wheat className="w-4 h-4 text-amber-600" />
-            1. Cadastro de Insumos
-            <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium">
-              {ingredientes.length}
-            </span>
+            1. Insumos ({ingredientes.length})
           </button>
 
           <button
             onClick={() => setAbaAtiva("fichas")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`pb-2 font-medium transition-colors ${
               abaAtiva === "fichas"
-                ? "bg-white text-amber-950 shadow-sm"
-                : "text-stone-600 hover:text-stone-900"
+                ? "border-b-2 border-stone-900 text-stone-900 font-semibold"
+                : "text-stone-500 hover:text-stone-800"
             }`}
           >
-            <FileSpreadsheet className="w-4 h-4 text-amber-700" />
-            2. Fichas Técnicas dos Produtos
-            <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold">
-              {produtos.filter((p) => p.fichaTecnica && p.fichaTecnica.itens.length > 0).length}/{produtos.length}
-            </span>
+            2. Ficha Técnica dos Produtos
           </button>
         </div>
       </div>
 
       {/* ============================================================== */}
-      {/* ABA 1: FICHAS TÉCNICAS (DESIGN ESPAÇOSO, INTUITIVO E DIRETO)    */}
-      {/* ============================================================== */}
-      {abaAtiva === "fichas" && (
-        <div className="space-y-6">
-          {/* Barra de Seleção de Produto Ampla */}
-          <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="space-y-1.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200/70 inline-block">
-                  Produto para Montagem da Receita
-                </span>
-                <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-                  Selecione o produto que você deseja gerenciar a ficha:
-                </h2>
-              </div>
-
-              {/* Seletor Dropdown Amplo */}
-              <div className="w-full lg:w-96">
-                <label className="block text-xs font-bold text-stone-500 uppercase mb-1">
-                  Escolher Produto
-                </label>
-                <div className="relative">
-                  <select
-                    value={produtoSelecionado?.id || ""}
-                    onChange={(e) => {
-                      const prod = produtos.find((p) => p.id === e.target.value);
-                      if (prod) selecionarProdutoParaEditar(prod);
-                    }}
-                    className="w-full appearance-none bg-stone-50 hover:bg-stone-100 border-2 border-amber-500/30 focus:border-amber-500 rounded-xl px-4 py-3 text-stone-900 font-black text-base outline-none transition cursor-pointer pr-10"
-                  >
-                    {produtos.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nome} ({p.rendimento} un) {p.fichaTecnica?.itens.length ? "✓ Ficha Pronta" : "— Sem Ficha"}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-5 h-5 text-stone-400 absolute right-3 top-3.5 pointer-events-none" />
-                </div>
-              </div>
-            </div>
-
-            {/* Badges de Informações do Produto Selecionado */}
-            {produtoSelecionado && (
-              <div className="mt-6 pt-5 border-t border-stone-100 flex flex-wrap items-center gap-6 text-sm text-stone-600">
-                <div className="flex items-center gap-2">
-                  <Cake className="w-4 h-4 text-amber-600" />
-                  <span>
-                    Produto: <strong className="text-stone-900 text-base">{produtoSelecionado.nome}</strong>
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-stone-400" />
-                  <span>
-                    Rendimento da Receita:{" "}
-                    <strong className="text-stone-900 font-bold">{produtoSelecionado.rendimento} unidades</strong>
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-600" />
-                  <span>
-                    Preço de Venda Padrão:{" "}
-                    <strong className="text-stone-900 font-black">
-                      {formatarCentavosParaReal(produtoSelecionado.precoVenda)}
-                    </strong>
-                  </span>
-                </div>
-
-                {produtoSelecionado.precoSecundario > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-stone-400">•</span>
-                    <span>
-                      Preço Diferenciado:{" "}
-                      <strong className="text-stone-800 font-bold">
-                        {formatarCentavosParaReal(produtoSelecionado.precoSecundario)}
-                      </strong>
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Área Principal da Ficha Técnica */}
-          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm space-y-6">
-            {/* Cabeçalho da Área com Ação de Inserir Insumo Cadastrado */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200">
-              <div>
-                <h3 className="text-lg font-bold text-stone-900 flex items-center gap-2">
-                  <Scale className="w-5 h-5 text-amber-600" />
-                  Insumos da Receita
-                </h3>
-                <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-                  Adicione os insumos cadastrados à receita e informe a quantidade gasta no preparo.
-                </p>
-              </div>
-
-              {/* Botão de Adicionar Insumo Cadastrado */}
-              <div className="flex items-center gap-3">
-                {ingredientes.length === 0 ? (
-                  <div className="text-xs text-amber-800 bg-amber-50 px-3 py-2 rounded-xl border border-amber-200 flex items-center gap-2">
-                    <Info className="w-4 h-4 shrink-0" />
-                    <span>Nenhum insumo cadastrado ainda. Cadastre insumos na outra aba.</span>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <select
-                      defaultValue=""
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          adicionarInsumoCadastrado(e.target.value);
-                          e.target.value = "";
-                        }
-                      }}
-                      className="bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-4 py-2.5 rounded-xl text-sm transition shadow-sm cursor-pointer outline-none flex items-center gap-2"
-                    >
-                      <option value="" disabled className="text-stone-900 bg-white">
-                        + Puxar Insumo Cadastrado...
-                      </option>
-                      {ingredientes.map((ing) => (
-                        <option key={ing.id} value={ing.id} className="text-stone-900 bg-white">
-                          {ing.nome} ({ing.unidadeBase === "UNIDADE" ? "un" : "kg"})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Mensagem de Feedback ao Salvar */}
-            {msgFicha && (
-              <div
-                className={`p-4 rounded-xl text-sm font-semibold flex items-center gap-3 ${
-                  msgFicha.tipo === "sucesso"
-                    ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
-                    : "bg-red-50 text-red-900 border border-red-200"
-                }`}
-              >
-                {msgFicha.tipo === "sucesso" ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                ) : (
-                  <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-                )}
-                {msgFicha.texto}
-              </div>
-            )}
-
-            {/* Tabela Ampla e Confortável de Itens da Receita */}
-            {itensFicha.length === 0 ? (
-              <div className="p-16 text-center border-2 border-dashed border-stone-200 rounded-2xl bg-stone-50/50">
-                <Scale className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-                <h4 className="font-bold text-stone-800 text-base">Nenhum insumo adicionado a esta receita</h4>
-                <p className="text-xs text-stone-500 mt-1 max-w-md mx-auto">
-                  Clique no botão <strong>"+ Puxar Insumo Cadastrado"</strong> acima para escolher os insumos que compõem este produto.
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto border border-stone-200 rounded-2xl shadow-2xs">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-stone-50/80 text-stone-600 font-bold uppercase text-xs tracking-wider border-b border-stone-200">
-                    <tr>
-                      <th className="py-4 px-5">Insumo Cadastrado</th>
-                      <th className="py-4 px-4 text-center w-32">Unidade</th>
-                      <th className="py-4 px-4 text-right w-44">Custo do Insumo</th>
-                      <th className="py-4 px-5 text-right w-52">Qtd. Usada na Receita</th>
-                      <th className="py-4 px-5 text-right w-48 font-black text-amber-950">
-                        Custo Proporcional
-                      </th>
-                      <th className="py-4 px-3 w-16 text-center"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100">
-                    {itensFicha.map((item, idx) => {
-                      const calc = calculosFicha[idx];
-
-                      return (
-                        <tr key={idx} className="hover:bg-amber-50/20 transition-colors">
-                          {/* Insumo selecionado com dropdown caso queira alterar */}
-                          <td className="py-3.5 px-5">
-                            <div className="flex items-center gap-2">
-                              <select
-                                value={item.ingredienteId}
-                                onChange={(e) => trocarInsumoDaLinha(idx, e.target.value)}
-                                className="font-extrabold text-stone-900 bg-transparent border-b border-dashed border-stone-300 hover:border-amber-500 pb-0.5 outline-none text-base cursor-pointer"
-                              >
-                                {item.ingredienteId === "custom" && (
-                                  <option value="custom">{item.nomeInsumo}</option>
-                                )}
-                                {ingredientes.map((ing) => (
-                                  <option key={ing.id} value={ing.id}>
-                                    {ing.nome}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </td>
-
-                          {/* Unidade: KG ou UNIDADE */}
-                          <td className="py-3.5 px-4 text-center">
-                            <span className="inline-flex px-3 py-1 rounded-lg bg-stone-100 text-stone-700 font-bold text-xs uppercase tracking-wider">
-                              {item.unidadeMedida === "UNIDADE" ? "Unidade" : "Quilo (kg)"}
-                            </span>
-                          </td>
-
-                          {/* Custo Total e Referência por kg/un */}
-                          <td className="py-3.5 px-4 text-right">
-                            <div className="font-bold text-stone-800">
-                              {formatarCentavosParaReal(calc?.precoCentavos || 0)}
-                            </div>
-                            <span className="text-[11px] text-stone-400 block">
-                              por {item.tamanhoEmbalagemStr} {item.unidadeMedida === "UNIDADE" ? "un" : "kg"}
-                            </span>
-                          </td>
-
-                          {/* Quantidade na Receita */}
-                          <td className="py-3.5 px-5 text-right">
-                            <div className="inline-flex items-center gap-2 justify-end">
-                              <input
-                                type="text"
-                                value={item.quantidadeStr}
-                                onChange={(e) => atualizarQuantidadeInsumo(idx, e.target.value)}
-                                placeholder={item.unidadeMedida === "KG" ? "0,5" : "2"}
-                                className="w-28 px-3 py-2 border-2 border-stone-300 focus:border-amber-500 rounded-xl text-sm font-black text-right text-stone-900 outline-none transition"
-                              />
-                              <span className="text-xs font-bold text-stone-500">
-                                {item.unidadeMedida === "UNIDADE" ? "un" : "kg"}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Custo Calculado Proporcional */}
-                          <td className="py-3.5 px-5 text-right font-black text-amber-950 text-base">
-                            {formatarCentavosParaReal(calc?.custoCalculado || 0)}
-                          </td>
-
-                          {/* Remover */}
-                          <td className="py-3.5 px-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() => removerLinhaInsumo(idx)}
-                              className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                              title="Remover insumo da receita"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Totalizadores Amplos e de Alto Impacto */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-              {/* Volume / Peso Total */}
-              <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200">
-                <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-1">
-                  Volume / Peso Total da Receita
-                </span>
-                <div className="font-black text-stone-900 text-2xl">
-                  {todosSaoKg && `${totalKg.toLocaleString("pt-BR", { maximumFractionDigits: 3 })} kg`}
-                  {todosSaoUn && `${totalUn} un`}
-                  {!todosSaoKg && !todosSaoUn && (
-                    <div className="text-xl font-black text-stone-800">
-                      {totalKg > 0 && <span>{totalKg.toFixed(3)} kg</span>}
-                      {totalKg > 0 && totalUn > 0 && <span> + </span>}
-                      {totalUn > 0 && <span>{totalUn} un</span>}
-                    </div>
-                  )}
-                </div>
-                <span className="text-xs text-stone-400 mt-1 block">
-                  Soma total dos insumos utilizados no lote
-                </span>
-              </div>
-
-              {/* Custo Total da Receita */}
-              <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200">
-                <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-1">
-                  Custo Total da Receita
-                </span>
-                <div className="font-black text-amber-950 text-2xl">
-                  {formatarCentavosParaReal(custoTotalReceita)}
-                </div>
-                <span className="text-xs text-stone-400 mt-1 block">
-                  Soma dos custos de todos os insumos
-                </span>
-              </div>
-
-              {/* Custo Unitário do Produto (Destaque Principal) */}
-              <div className="bg-gradient-to-br from-amber-600 to-amber-700 text-white p-5 rounded-2xl shadow-md">
-                <span className="text-xs font-bold text-amber-100 uppercase tracking-wider block mb-1">
-                  Custo Unitário do Produto
-                </span>
-                <div className="font-black text-3xl">
-                  {formatarCentavosParaReal(custoUnitario)}
-                </div>
-                <span className="text-xs text-amber-200 mt-1 block font-medium">
-                  Custo da receita ÷ {produtoSelecionado?.rendimento || 1} unidades de rendimento
-                </span>
-              </div>
-            </div>
-
-            {/* Painel de Margem e Lucratividade com Preço Padrão */}
-            {produtoSelecionado && (
-              <div className="p-5 bg-amber-50/60 rounded-2xl border border-amber-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <span className="text-sm font-extrabold text-amber-950 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-emerald-600" />
-                    Análise de Margem de Lucro (Preço de Venda:{" "}
-                    {formatarCentavosParaReal(produtoSelecionado.precoVenda)})
-                  </span>
-                  <p className="text-xs sm:text-sm text-stone-600">
-                    {produtoSelecionado.precoVenda > custoUnitario ? (
-                      <>
-                        Lucro bruto de{" "}
-                        <strong className="text-emerald-700 font-black">
-                          {formatarCentavosParaReal(produtoSelecionado.precoVenda - custoUnitario)}
-                        </strong>{" "}
-                        por unidade (
-                        <strong>
-                          {(
-                            ((produtoSelecionado.precoVenda - custoUnitario) /
-                              produtoSelecionado.precoVenda) *
-                            100
-                          ).toFixed(1)}
-                          % de margem
-                        </strong>
-                        ).
-                      </>
-                    ) : (
-                      <span className="text-red-600 font-bold">
-                        Atenção: O preço de venda está abaixo do custo unitário do produto!
-                      </span>
-                    )}
-                  </p>
-                </div>
-
-                {/* Botão de Salvar Ficha Técnica */}
-                <button
-                  type="button"
-                  onClick={handleSalvarFicha}
-                  disabled={isPendingFicha}
-                  className="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-black px-8 py-3.5 rounded-xl text-base transition shadow-md flex items-center justify-center gap-2.5 self-stretch md:self-auto"
-                >
-                  <Save className="w-5 h-5" />
-                  {isPendingFicha ? "Salvando Ficha..." : "Salvar Ficha Técnica"}
-                </button>
-              </div>
-            )}
-
-            {/* Observações / Modo de Preparo */}
-            <div className="pt-2">
-              <label className="block text-xs font-bold text-stone-700 uppercase mb-2">
-                Observações / Modo de Preparo da Receita
-              </label>
-              <textarea
-                rows={3}
-                value={obsFicha}
-                onChange={(e) => setObsFicha(e.target.value)}
-                placeholder="Anote detalhes de preparo, tempo de forno ou orientações sobre os insumos..."
-                className="w-full px-4 py-3 border border-stone-300 rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-stone-400"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ============================================================== */}
-      {/* ABA 2: CADASTRO DE INSUMOS                                     */}
+      {/* ABA 1: INSUMOS (MINIMALISTA)                                  */}
       {/* ============================================================== */}
       {abaAtiva === "ingredientes" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Formulário Novo Insumo */}
-          <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm h-fit">
-            <h2 className="text-lg font-bold text-stone-900 mb-1 flex items-center gap-2">
-              <Plus className="w-5 h-5 text-amber-600" />
-              Cadastrar Insumo / Ingrediente
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* Formulário Minimalista de Cadastro */}
+          <div className="bg-white p-5 rounded-xl border border-stone-200">
+            <h2 className="text-sm font-semibold text-stone-900 mb-3">
+              Novo Insumo
             </h2>
-            <p className="text-xs text-stone-500 mb-5">
-              Cadastre o insumo com sua quantidade e custo para compor as receitas.
-            </p>
 
             {msgIngrediente && (
               <div
-                className={`p-3 rounded-xl mb-4 text-xs font-semibold flex items-center gap-2 ${
+                className={`p-2.5 rounded-lg mb-3 text-xs font-medium ${
                   msgIngrediente.tipo === "sucesso"
-                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    : "bg-red-50 text-red-800 border border-red-200"
+                    ? "bg-stone-100 text-stone-800"
+                    : "bg-red-50 text-red-700"
                 }`}
               >
-                {msgIngrediente.tipo === "sucesso" ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                )}
                 {msgIngrediente.texto}
               </div>
             )}
@@ -720,37 +303,37 @@ export default function GestaoIngredientesEFichas({
                 startTransitionIngrediente(async () => {
                   const res = await criarIngredienteAction(formData);
                   if (res?.sucesso) {
-                    setMsgIngrediente({ tipo: "sucesso", texto: "Insumo cadastrado com sucesso!" });
+                    setMsgIngrediente({ tipo: "sucesso", texto: "Insumo salvo com sucesso." });
                     (e.target as HTMLFormElement).reset();
                   } else {
-                    setMsgIngrediente({ tipo: "erro", texto: res?.erro || "Erro ao salvar insumo." });
+                    setMsgIngrediente({ tipo: "erro", texto: res?.erro || "Erro ao salvar." });
                   }
                 });
               }}
-              className="space-y-4"
+              className="space-y-3"
             >
               <div>
-                <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                  Nome do Insumo
+                <label className="block text-xs font-medium text-stone-600 mb-1">
+                  Nome
                 </label>
                 <input
                   type="text"
                   name="nome"
                   required
-                  placeholder="Ex: Farinha de Trigo, Ovos, Leite"
-                  className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none placeholder:text-stone-400"
+                  placeholder="Ex: Farinha de Trigo"
+                  className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 focus:border-stone-400 outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                    Unidade de Medida
+                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                    Unidade
                   </label>
                   <select
                     name="unidadeMedida"
                     defaultValue="KG"
-                    className="w-full px-3 py-2.5 border border-stone-300 rounded-xl text-sm text-stone-900 font-bold bg-white"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 bg-white focus:border-stone-400 outline-none"
                   >
                     <option value="KG">Quilo (kg)</option>
                     <option value="UNIDADE">Unidade (un)</option>
@@ -758,7 +341,7 @@ export default function GestaoIngredientesEFichas({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
+                  <label className="block text-xs font-medium text-stone-600 mb-1">
                     Quantidade
                   </label>
                   <input
@@ -767,90 +350,69 @@ export default function GestaoIngredientesEFichas({
                     name="quantidade"
                     defaultValue="1"
                     required
-                    placeholder="Ex: 1 ou 30"
-                    className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-sm text-stone-900 font-medium"
+                    placeholder="1"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 focus:border-stone-400 outline-none"
                   />
-                  <span className="text-[10px] text-stone-400 mt-0.5 block">Ex: 1 kg ou 30 un</span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                  Custo (R$)
+                <label className="block text-xs font-medium text-stone-600 mb-1">
+                  Custo Total (R$)
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-stone-400 font-bold text-sm">R$</span>
-                  <input
-                    type="text"
-                    name="preco"
-                    required
-                    placeholder="0,00"
-                    className="w-full pl-10 pr-3.5 py-2.5 border border-stone-300 rounded-xl text-sm text-stone-900 font-black"
-                  />
-                </div>
-                <p className="text-[11px] text-stone-500 mt-1">
-                  Valor pago pelo insumo (ex: R$ 5,50 por 1kg de farinha).
-                </p>
+                <input
+                  type="text"
+                  name="preco"
+                  required
+                  placeholder="0,00"
+                  className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 focus:border-stone-400 outline-none"
+                />
               </div>
 
               <button
                 type="submit"
                 disabled={isPendingIngrediente}
-                className="w-full bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2"
+                className="w-full bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white font-medium py-2 rounded-lg text-sm transition"
               >
-                <Save className="w-4 h-4" />
                 {isPendingIngrediente ? "Salvando..." : "Salvar Insumo"}
               </button>
             </form>
           </div>
 
-          {/* Tabela de Insumos */}
-          <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-              <div>
-                <h2 className="text-lg font-bold text-stone-900 flex items-center gap-2">
-                  <Wheat className="w-5 h-5 text-amber-600" />
-                  Insumos Cadastrados ({ingredientesFiltrados.length})
-                </h2>
-                <p className="text-xs text-stone-500">
-                  Lista de insumos disponíveis para compor receitas e fichas.
-                </p>
-              </div>
+          {/* Lista Minimalista de Insumos */}
+          <div className="lg:col-span-2 bg-white rounded-xl border border-stone-200 overflow-hidden">
+            <div className="p-4 border-b border-stone-100 flex items-center justify-between gap-3">
+              <span className="text-xs font-medium text-stone-500">
+                {ingredientesFiltrados.length} insumo(s) cadastrado(s)
+              </span>
 
-              <div className="relative w-full sm:w-64">
-                <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  placeholder="Buscar insumo..."
-                  value={buscaIngrediente}
-                  onChange={(e) => setBuscaIngrediente(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-xl text-xs text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="Buscar insumo..."
+                value={buscaIngrediente}
+                onChange={(e) => setBuscaIngrediente(e.target.value)}
+                className="w-56 px-3 py-1.5 border border-stone-200 rounded-lg text-xs text-stone-900 focus:border-stone-400 outline-none"
+              />
             </div>
 
             {ingredientesFiltrados.length === 0 ? (
-              <div className="p-12 text-center border-2 border-dashed border-stone-200 rounded-2xl">
-                <Wheat className="w-12 h-12 text-stone-300 mx-auto mb-2" />
-                <p className="text-sm font-bold text-stone-700">Nenhum ingrediente encontrado</p>
-                <p className="text-xs text-stone-500 mt-1">
-                  Cadastre seu primeiro insumo no formulário ao lado.
-                </p>
+              <div className="p-8 text-center text-xs text-stone-400">
+                Nenhum insumo encontrado.
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200 text-stone-500 font-bold text-xs uppercase tracking-wider bg-stone-50/50">
-                      <th className="py-3 px-4">Insumo</th>
-                      <th className="py-3 px-4 text-center">Unidade</th>
-                      <th className="py-3 px-4 text-right">Qtd. Cadastrada</th>
-                      <th className="py-3 px-4 text-right">Custo</th>
-                      <th className="py-3 px-4 text-right">Custo / Unidade</th>
-                      <th className="py-3 px-4 text-right">Ações</th>
+                    <tr className="border-b border-stone-100 text-stone-400 font-medium">
+                      <th className="py-2.5 px-4 font-normal">Insumo</th>
+                      <th className="py-2.5 px-3 text-center font-normal">Unidade</th>
+                      <th className="py-2.5 px-4 text-right font-normal">Qtd. Cadastrada</th>
+                      <th className="py-2.5 px-4 text-right font-normal">Custo Total</th>
+                      <th className="py-2.5 px-4 text-right font-normal">Custo Unitário</th>
+                      <th className="py-2.5 px-3 text-right font-normal"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100">
+                  <tbody className="divide-y divide-stone-100 text-stone-800">
                     {ingredientesFiltrados.map((i) => {
                       const preco = i.historicoPrecos[0];
                       const unidadeStr = i.unidadeBase === "UNIDADE" ? "un" : "kg";
@@ -859,44 +421,28 @@ export default function GestaoIngredientesEFichas({
                         : 0;
 
                       return (
-                        <tr key={i.id} className="hover:bg-amber-50/30 transition-colors">
-                          <td className="py-3 px-4 font-bold text-stone-900">
+                        <tr key={i.id} className="hover:bg-stone-50/50">
+                          <td className="py-2.5 px-4 font-medium text-stone-900">
                             {i.nome}
-                            {i.historicoPrecos.length > 1 && (
-                              <span className="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-900 text-[10px] rounded font-bold">
-                                {i.historicoPrecos.length} compras
-                              </span>
-                            )}
                           </td>
 
-                          <td className="py-3 px-4 text-center">
-                            <span className="px-2 py-0.5 bg-stone-100 text-stone-700 font-bold text-xs rounded-md">
-                              {unidadeStr.toUpperCase()}
-                            </span>
+                          <td className="py-2.5 px-3 text-center text-stone-500">
+                            {unidadeStr}
                           </td>
 
-                          <td className="py-3 px-4 text-right text-stone-700 text-xs font-semibold">
+                          <td className="py-2.5 px-4 text-right text-stone-600">
                             {preco ? `${preco.tamanhoEmbalagem} ${unidadeStr}` : "-"}
                           </td>
 
-                          <td className="py-3 px-4 text-right text-stone-900 font-black text-xs">
+                          <td className="py-2.5 px-4 text-right font-medium text-stone-900">
                             {preco ? formatarCentavosParaReal(preco.precoEmbalagem) : "-"}
                           </td>
 
-                          <td className="py-3 px-4 text-right font-black text-amber-950 text-sm">
-                            {preco ? (
-                              <>
-                                R$ {custoUnitarioCalculado.toFixed(2)}
-                                <span className="text-[10px] font-normal text-stone-400 block">
-                                  por {unidadeStr}
-                                </span>
-                              </>
-                            ) : (
-                              "-"
-                            )}
+                          <td className="py-2.5 px-4 text-right text-stone-600">
+                            {preco ? `R$ ${custoUnitarioCalculado.toFixed(2)} / ${unidadeStr}` : "-"}
                           </td>
 
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-2.5 px-3 text-right">
                             <ModalEditarIngrediente ingrediente={i} />
                           </td>
                         </tr>
@@ -906,6 +452,242 @@ export default function GestaoIngredientesEFichas({
                 </table>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* ABA 2: FICHA TÉCNICA (MINIMALISTA, SÓBRIA E CLARA)            */}
+      {/* ============================================================== */}
+      {abaAtiva === "fichas" && (
+        <div className="space-y-4">
+          {/* Barra Simples de Seleção de Produto */}
+          <div className="bg-white p-4 rounded-xl border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-stone-500">Produto:</span>
+              <div className="relative">
+                <select
+                  value={produtoSelecionado?.id || ""}
+                  onChange={(e) => {
+                    const prod = produtos.find((p) => p.id === e.target.value);
+                    if (prod) selecionarProdutoParaEditar(prod);
+                  }}
+                  className="appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-300 rounded-lg px-3 py-1.5 text-stone-900 font-semibold text-sm outline-none transition cursor-pointer pr-8"
+                >
+                  {produtos.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-stone-400 absolute right-2.5 top-2.5 pointer-events-none" />
+              </div>
+
+              {produtoSelecionado && (
+                <span className="text-xs text-stone-500">
+                  Rendimento: <strong>{produtoSelecionado.rendimento} un</strong>
+                </span>
+              )}
+            </div>
+
+            {/* Adicionar Insumo */}
+            {ingredientes.length > 0 && (
+              <div className="relative">
+                <select
+                  defaultValue=""
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      adicionarInsumoCadastrado(e.target.value);
+                      e.target.value = "";
+                    }
+                  }}
+                  className="bg-stone-900 hover:bg-stone-800 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition cursor-pointer outline-none"
+                >
+                  <option value="" disabled className="text-stone-900 bg-white">
+                    + Inserir insumo na receita...
+                  </option>
+                  {ingredientes.map((ing) => (
+                    <option key={ing.id} value={ing.id} className="text-stone-900 bg-white">
+                      {ing.nome} ({ing.unidadeBase === "UNIDADE" ? "un" : "kg"})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Feedback */}
+          {msgFicha && (
+            <div
+              className={`p-3 rounded-lg text-xs font-medium ${
+                msgFicha.tipo === "sucesso"
+                  ? "bg-stone-100 text-stone-800"
+                  : "bg-red-50 text-red-700"
+              }`}
+            >
+              {msgFicha.texto}
+            </div>
+          )}
+
+          {/* Tabela de Insumos da Receita */}
+          <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+            {itensFicha.length === 0 ? (
+              <div className="p-10 text-center text-xs text-stone-400">
+                Nenhum insumo adicionado a esta receita. Clique em "+ Inserir insumo" acima.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-stone-100 text-stone-400 font-normal">
+                      <th className="py-2.5 px-4 font-normal">Insumo</th>
+                      <th className="py-2.5 px-3 text-center font-normal w-24">Unidade</th>
+                      <th className="py-2.5 px-4 text-right font-normal w-32">Custo Base</th>
+                      <th className="py-2.5 px-4 text-right font-normal w-40">Qtd. na Receita</th>
+                      <th className="py-2.5 px-4 text-right font-normal w-32">Custo</th>
+                      <th className="py-2.5 px-2 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {itensFicha.map((item, idx) => {
+                      const calc = calculosFicha[idx];
+
+                      return (
+                        <tr key={idx} className="hover:bg-stone-50/50">
+                          {/* Insumo */}
+                          <td className="py-2 px-4">
+                            <select
+                              value={item.ingredienteId}
+                              onChange={(e) => trocarInsumoDaLinha(idx, e.target.value)}
+                              className="font-medium text-stone-900 bg-transparent outline-none cursor-pointer text-xs"
+                            >
+                              {item.ingredienteId === "custom" && (
+                                <option value="custom">{item.nomeInsumo}</option>
+                              )}
+                              {ingredientes.map((ing) => (
+                                <option key={ing.id} value={ing.id}>
+                                  {ing.nome}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+
+                          {/* Unidade */}
+                          <td className="py-2 px-3 text-center text-stone-500">
+                            {item.unidadeMedida === "UNIDADE" ? "un" : "kg"}
+                          </td>
+
+                          {/* Custo Base */}
+                          <td className="py-2 px-4 text-right text-stone-500">
+                            {formatarCentavosParaReal(calc?.precoCentavos || 0)}
+                          </td>
+
+                          {/* Quantidade na Receita */}
+                          <td className="py-2 px-4 text-right">
+                            <div className="inline-flex items-center gap-1.5 justify-end">
+                              <input
+                                type="text"
+                                value={item.quantidadeStr}
+                                onChange={(e) => atualizarQuantidadeInsumo(idx, e.target.value)}
+                                placeholder="0"
+                                className="w-20 px-2 py-1 border border-stone-200 rounded text-xs text-right text-stone-900 outline-none focus:border-stone-400"
+                              />
+                              <span className="text-stone-400 text-[11px]">
+                                {item.unidadeMedida === "UNIDADE" ? "un" : "kg"}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Custo Proporcional */}
+                          <td className="py-2 px-4 text-right font-medium text-stone-900">
+                            {formatarCentavosParaReal(calc?.custoCalculado || 0)}
+                          </td>
+
+                          {/* Remover */}
+                          <td className="py-2 px-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removerLinhaInsumo(idx)}
+                              className="p-1 text-stone-400 hover:text-stone-700 transition"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Linha de Resumo e Custo */}
+            <div className="p-4 bg-stone-50/70 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+              <div className="flex flex-wrap items-center gap-6 text-stone-600">
+                <div>
+                  Peso/Qtd Total:{" "}
+                  <strong className="text-stone-900">
+                    {totalKg > 0 && `${totalKg.toFixed(3)} kg`}
+                    {totalKg > 0 && totalUn > 0 && " + "}
+                    {totalUn > 0 && `${totalUn} un`}
+                    {totalKg === 0 && totalUn === 0 && "-"}
+                  </strong>
+                </div>
+
+                <div>
+                  Custo da Receita:{" "}
+                  <strong className="text-stone-900 font-semibold">
+                    {formatarCentavosParaReal(custoTotalReceita)}
+                  </strong>
+                </div>
+
+                <div>
+                  Custo Unitário:{" "}
+                  <strong className="text-stone-950 font-bold text-sm">
+                    {formatarCentavosParaReal(custoUnitario)}
+                  </strong>{" "}
+                  <span className="text-stone-400">/ un</span>
+                </div>
+
+                {produtoSelecionado && (
+                  <div>
+                    Margem Venda ({formatarCentavosParaReal(produtoSelecionado.precoVenda)}):{" "}
+                    <strong className="text-stone-900">
+                      {produtoSelecionado.precoVenda > custoUnitario
+                        ? `${(
+                            ((produtoSelecionado.precoVenda - custoUnitario) /
+                              produtoSelecionado.precoVenda) *
+                            100
+                          ).toFixed(0)}%`
+                        : "0%"}
+                    </strong>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSalvarFicha}
+                disabled={isPendingFicha}
+                className="bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-lg text-xs transition"
+              >
+                {isPendingFicha ? "Salvando..." : "Salvar Ficha"}
+              </button>
+            </div>
+          </div>
+
+          {/* Observações da Receita */}
+          <div>
+            <label className="block text-xs font-medium text-stone-500 mb-1">
+              Observações
+            </label>
+            <input
+              type="text"
+              value={obsFicha}
+              onChange={(e) => setObsFicha(e.target.value)}
+              placeholder="Anotações sobre forno, tempo ou preparo (opcional)..."
+              className="w-full px-3 py-2 border border-stone-200 rounded-lg text-xs text-stone-800 focus:border-stone-400 outline-none"
+            />
           </div>
         </div>
       )}

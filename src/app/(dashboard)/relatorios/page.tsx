@@ -154,7 +154,7 @@ export default async function RelatoriosPage({
           <div>
             <button
               type="submit"
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition"
+              className="w-full bg-stone-900 hover:bg-black text-white font-bold py-2.5 px-4 rounded-xl text-sm transition"
             >
               Filtrar Dados
             </button>

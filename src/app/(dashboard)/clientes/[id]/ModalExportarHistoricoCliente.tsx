@@ -105,7 +105,7 @@ export default function ModalExportarHistoricoCliente({
     let y = 16;
 
     // Cabeçalho da Empresa
-    doc.setFillColor(217, 119, 6); // amber-600
+    doc.setFillColor(24, 24, 27); // stone-900 (black & white)
     doc.rect(margin, y, 4, 16, "F");
 
     doc.setFont("helvetica", "bold");
@@ -311,7 +311,7 @@ export default function ModalExportarHistoricoCliente({
         onClick={() => setAberto(true)}
         className="inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 border border-stone-300 text-stone-800 font-bold px-4 py-2.5 rounded-xl text-sm shadow-xs transition w-full sm:w-auto"
       >
-        <Printer className="w-4 h-4 text-amber-600" />
+        <Printer className="w-4 h-4 text-stone-700" />
         Imprimir / Exportar Histórico (PDF)
       </button>
 
@@ -322,7 +322,7 @@ export default function ModalExportarHistoricoCliente({
             <div className="flex items-center justify-between pb-3 border-b">
               <div>
                 <h3 className="font-extrabold text-stone-900 text-lg flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-amber-600" />
+                  <FileText className="w-5 h-5 text-stone-700" />
                   Exportar Histórico de Compras
                 </h3>
                 <p className="text-xs text-stone-500 mt-0.5">Cliente: {cliente.nome}</p>
@@ -346,7 +346,7 @@ export default function ModalExportarHistoricoCliente({
                     type="button"
                     onClick={() => setTipoFiltro("todos")}
                     className={`py-2 px-3 rounded-xl text-xs font-bold transition border ${tipoFiltro === "todos"
-                        ? "bg-amber-500 text-white border-amber-500 shadow-xs"
+                        ? "bg-stone-900 text-white border-stone-900 shadow-xs"
                         : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
                       }`}
                   >
@@ -356,7 +356,7 @@ export default function ModalExportarHistoricoCliente({
                     type="button"
                     onClick={() => setTipoFiltro("mes")}
                     className={`py-2 px-3 rounded-xl text-xs font-bold transition border ${tipoFiltro === "mes"
-                        ? "bg-amber-500 text-white border-amber-500 shadow-xs"
+                        ? "bg-stone-900 text-white border-stone-900 shadow-xs"
                         : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
                       }`}
                   >
@@ -366,7 +366,7 @@ export default function ModalExportarHistoricoCliente({
                     type="button"
                     onClick={() => setTipoFiltro("periodo")}
                     className={`py-2 px-3 rounded-xl text-xs font-bold transition border ${tipoFiltro === "periodo"
-                        ? "bg-amber-500 text-white border-amber-500 shadow-xs"
+                        ? "bg-stone-900 text-white border-stone-900 shadow-xs"
                         : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
                       }`}
                   >
@@ -379,14 +379,14 @@ export default function ModalExportarHistoricoCliente({
               {tipoFiltro === "mes" && (
                 <div className="bg-stone-50 p-3.5 rounded-xl border border-stone-200">
                   <label className="block text-xs font-bold text-stone-600 mb-1 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                    <Calendar className="w-3.5 h-3.5 text-stone-700" />
                     Escolha o mês
                   </label>
                   <input
                     type="month"
                     value={mesSelecionado}
                     onChange={(e) => setMesSelecionado(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm font-semibold text-stone-900 outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm font-semibold text-stone-900 outline-none focus:ring-2 focus:ring-stone-900"
                   />
                 </div>
               )}
@@ -400,7 +400,7 @@ export default function ModalExportarHistoricoCliente({
                       type="date"
                       value={dataInicio}
                       onChange={(e) => setDataInicio(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-xs font-semibold text-stone-900 outline-none focus:ring-2 focus:ring-amber-500"
+                      className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-xs font-semibold text-stone-900 outline-none focus:ring-2 focus:ring-stone-900"
                     />
                   </div>
                   <div>
@@ -409,14 +409,14 @@ export default function ModalExportarHistoricoCliente({
                       type="date"
                       value={dataFim}
                       onChange={(e) => setDataFim(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-xs font-semibold text-stone-900 outline-none focus:ring-2 focus:ring-amber-500"
+                      className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-xs font-semibold text-stone-900 outline-none focus:ring-2 focus:ring-stone-900"
                     />
                   </div>
                 </div>
               )}
 
               {/* Prévia do que vai sair no relatório */}
-              <div className="bg-amber-50/70 border border-amber-200 p-3.5 rounded-xl space-y-1.5 text-xs text-amber-950">
+              <div className="bg-stone-100 border border-stone-200 p-3.5 rounded-xl space-y-1.5 text-xs text-stone-900">
                 <div className="flex justify-between font-medium">
                   <span>Compras selecionadas:</span>
                   <span className="font-bold">{vendasFiltradas.length} pedidos</span>
@@ -430,7 +430,7 @@ export default function ModalExportarHistoricoCliente({
                   <span className="font-bold text-emerald-700">{formatarCentavosParaReal(pagoFiltro)}</span>
                 </div>
                 {pendenteFiltro > 0 && (
-                  <div className="flex justify-between font-bold text-rose-700 pt-1 border-t border-amber-200/60">
+                  <div className="flex justify-between font-bold text-rose-700 pt-1 border-t border-stone-200">
                     <span>Saldo pendente no período:</span>
                     <span>{formatarCentavosParaReal(pendenteFiltro)}</span>
                   </div>
@@ -459,7 +459,7 @@ export default function ModalExportarHistoricoCliente({
                 <button
                   type="button"
                   onClick={() => gerarPDF("download")}
-                  className="flex-1 py-2.5 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition shadow"
+                  className="flex-1 py-2.5 px-3 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition shadow"
                 >
                   <Download className="w-4 h-4" />
                   Baixar PDF

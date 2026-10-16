@@ -98,16 +98,16 @@ export default function ModalEditarIngrediente({
 
   return (
     <>
-      <button
-        onClick={() => {
-          setAberto(true);
-          setAba("editar");
-        }}
-        className="p-1.5 text-stone-500 hover:text-amber-700 hover:bg-stone-100 rounded-lg transition"
-        title="Editar Ingrediente e Preço"
-      >
-        <Edit2 className="w-4 h-4" />
-      </button>
+        <button
+          onClick={() => {
+            setAberto(true);
+            setAba("editar");
+          }}
+          className="p-1.5 text-stone-400 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition"
+          title="Editar Insumo"
+        >
+          <Edit2 className="w-3.5 h-3.5" />
+        </button>
 
       {aberto && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -115,10 +115,10 @@ export default function ModalEditarIngrediente({
             {/* Cabeçalho */}
             <div className="flex items-center justify-between pb-3 border-b">
               <div>
-                <h3 className="font-extrabold text-stone-900 text-lg">
+                <h3 className="font-bold text-stone-900 text-base">
                   {ingrediente.nome}
                 </h3>
-                <p className="text-xs text-stone-500">Atualização de dados e histórico de preços</p>
+                <p className="text-xs text-stone-500">Atualização de dados e preço</p>
               </div>
               <button
                 onClick={() => setAberto(false)}
@@ -129,14 +129,14 @@ export default function ModalEditarIngrediente({
             </div>
 
             {/* Abas */}
-            <div className="flex border-b border-stone-100 my-4 text-xs font-bold">
+            <div className="flex border-b border-stone-100 my-4 text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setAba("editar")}
                 className={`py-2 px-4 border-b-2 transition ${
                   aba === "editar"
-                    ? "border-amber-600 text-amber-600"
-                    : "border-transparent text-stone-500 hover:text-stone-800"
+                    ? "border-stone-900 text-stone-900"
+                    : "border-transparent text-stone-400 hover:text-stone-700"
                 }`}
               >
                 Atualizar Preço / Cadastro
@@ -146,17 +146,17 @@ export default function ModalEditarIngrediente({
                 onClick={() => setAba("historico")}
                 className={`py-2 px-4 border-b-2 transition flex items-center gap-1.5 ${
                   aba === "historico"
-                    ? "border-amber-600 text-amber-600"
-                    : "border-transparent text-stone-500 hover:text-stone-800"
+                    ? "border-stone-900 text-stone-900"
+                    : "border-transparent text-stone-400 hover:text-stone-700"
                 }`}
               >
                 <History className="w-3.5 h-3.5" />
-                Variações de Preço ({ingrediente.historicoPrecos.length})
+                Histórico ({ingrediente.historicoPrecos.length})
               </button>
             </div>
 
             {erro && (
-              <div className="mb-4 p-2.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
+              <div className="mb-4 p-2.5 bg-red-50 text-red-700 text-xs rounded-xl font-medium">
                 {erro}
               </div>
             )}
@@ -164,21 +164,21 @@ export default function ModalEditarIngrediente({
             {aba === "editar" ? (
               <form onSubmit={handleSalvar} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                    Nome do Ingrediente
+                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                    Nome do Insumo
                   </label>
                   <input
                     type="text"
                     required
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 focus:border-stone-400 outline-none"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
+                    <label className="block text-xs font-medium text-stone-600 mb-1">
                       Unidade de Medida
                     </label>
                     <select
@@ -187,7 +187,7 @@ export default function ModalEditarIngrediente({
                         setUnidadeCompra(e.target.value);
                         setUnidadeBase(e.target.value === "UNIDADE" ? "UNIDADE" : "GRAMA");
                       }}
-                      className="w-full px-3 py-2 border rounded-xl text-sm font-bold text-stone-900 bg-white"
+                      className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 bg-white focus:border-stone-400 outline-none"
                     >
                       <option value="KG">Quilo (kg)</option>
                       <option value="UNIDADE">Unidade (un)</option>
@@ -195,7 +195,7 @@ export default function ModalEditarIngrediente({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
+                    <label className="block text-xs font-medium text-stone-600 mb-1">
                       Quantidade
                     </label>
                     <input
@@ -204,14 +204,13 @@ export default function ModalEditarIngrediente({
                       required
                       value={tamanhoEmbalagem}
                       onChange={(e) => setTamanhoEmbalagem(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-xl text-sm text-stone-900 font-medium"
+                      className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 focus:border-stone-400 outline-none"
                     />
-                    <span className="text-[10px] text-stone-400 mt-0.5 block">Ex: 1 kg ou 30 un</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
+                  <label className="block text-xs font-medium text-stone-600 mb-1">
                     Custo (R$)
                   </label>
                   <input
@@ -219,27 +218,24 @@ export default function ModalEditarIngrediente({
                     required
                     value={precoEmbalagem}
                     onChange={(e) => setPrecoEmbalagem(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-xl text-sm font-black text-amber-900 bg-amber-50/40 focus:ring-2 focus:ring-amber-500 outline-none"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm font-semibold text-stone-900 focus:border-stone-400 outline-none"
                   />
-                  <p className="text-[10px] text-stone-500 mt-0.5">
-                    Valor total pago por essa quantidade do insumo.
-                  </p>
                 </div>
 
                 {/* Card de Simulação e Variação */}
-                <div className="bg-stone-50 p-3.5 rounded-xl border border-stone-200/80 space-y-2 text-xs">
+                <div className="bg-stone-50 p-3 rounded-lg border border-stone-200 space-y-1 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-stone-500 font-medium">Custo por {unidadeBase.toLowerCase()}:</span>
-                    <span className="font-extrabold text-stone-900 text-sm">
+                    <span className="text-stone-500">Custo unitário:</span>
+                    <span className="font-semibold text-stone-900">
                       R$ {(novoCustoBasePrevisto / 100).toFixed(4)}
                     </span>
                   </div>
 
                   {custoAnterior > 0 && Math.abs(variacaoPercentual) >= 0.01 && (
-                    <div className="flex justify-between items-center pt-2 border-t border-stone-200">
-                      <span className="text-stone-500 font-medium">Variação de Preço:</span>
+                    <div className="flex justify-between items-center pt-1 border-t border-stone-200">
+                      <span className="text-stone-500">Variação:</span>
                       <span
-                        className={`font-black flex items-center gap-1 ${
+                        className={`font-semibold ${
                           variacaoPercentual > 0
                             ? "text-rose-600"
                             : variacaoPercentual < 0
@@ -247,15 +243,8 @@ export default function ModalEditarIngrediente({
                             : "text-stone-600"
                         }`}
                       >
-                        {variacaoPercentual > 0 ? (
-                          <TrendingUp className="w-3.5 h-3.5" />
-                        ) : variacaoPercentual < 0 ? (
-                          <TrendingDown className="w-3.5 h-3.5" />
-                        ) : (
-                          <Minus className="w-3.5 h-3.5" />
-                        )}
                         {variacaoPercentual > 0 ? "+" : ""}
-                        {variacaoPercentual.toFixed(1)}% em relação à última compra
+                        {variacaoPercentual.toFixed(1)}%
                       </span>
                     </div>
                   )}
@@ -265,22 +254,22 @@ export default function ModalEditarIngrediente({
                   <button
                     type="button"
                     onClick={() => setAberto(false)}
-                    className="flex-1 py-2.5 border rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-50"
+                    className="flex-1 py-2 border border-stone-200 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-50"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow transition"
+                    className="flex-1 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium transition"
                   >
-                    {isPending ? "Salvando..." : "Salvar Novo Preço"}
+                    {isPending ? "Salvando..." : "Salvar Preço"}
                   </button>
                 </div>
               </form>
             ) : (
               /* Aba de Histórico de Variações */
-              <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                 {ingrediente.historicoPrecos.map((h, idx) => {
                   const custo = h.custoUnidadeBase;
                   const anterior = ingrediente.historicoPrecos[idx + 1]?.custoUnidadeBase;
@@ -289,20 +278,20 @@ export default function ModalEditarIngrediente({
                   return (
                     <div
                       key={h.id}
-                      className="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between text-xs"
+                      className="p-3 bg-stone-50 rounded-lg border border-stone-200 flex items-center justify-between text-xs"
                     >
                       <div>
-                        <div className="font-bold text-stone-900">
+                        <div className="font-medium text-stone-900">
                           {h.tamanhoEmbalagem} {h.unidadeCompra} = {formatarCentavosParaReal(h.precoEmbalagem)}
                         </div>
-                        <div className="text-[11px] text-stone-500 mt-0.5">
-                          Registrado em: {formatarDataPtBr(h.dataRegistro)}
+                        <div className="text-[11px] text-stone-400 mt-0.5">
+                          {formatarDataPtBr(h.dataRegistro)}
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className="font-black text-amber-950">
-                          R$ {(custo / 100).toFixed(4)} / {ingrediente.unidadeBase.toLowerCase()}
+                        <div className="font-semibold text-stone-900">
+                          R$ {(custo / 100).toFixed(4)}
                         </div>
                         {varPct !== null && (
                           <span

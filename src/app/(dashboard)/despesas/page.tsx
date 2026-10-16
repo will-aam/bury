@@ -91,7 +91,7 @@ export default async function DespesasPage() {
         <div className="space-y-6">
           <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-sm">
             <h2 className="text-base sm:text-lg font-bold text-stone-900 mb-4 flex items-center gap-2">
-              <Plus className="w-5 h-5 text-amber-600" />
+              <Plus className="w-5 h-5 text-stone-700" />
               Lançar Nova Despesa
             </h2>
 
@@ -105,7 +105,7 @@ export default async function DespesasPage() {
                   name="descricao"
                   required
                   placeholder="Ex: Compra ovos e farinha"
-                  className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                  className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
                 />
               </div>
 
@@ -116,7 +116,7 @@ export default async function DespesasPage() {
                 <select
                   name="categoriaId"
                   required
-                  className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                  className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
                 >
                   {categorias.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -136,7 +136,7 @@ export default async function DespesasPage() {
                     name="valor"
                     required
                     placeholder="Ex: 85,50"
-                    className="w-full px-3 py-2.5 border rounded-xl text-sm font-bold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                    className="w-full px-3 py-2.5 border rounded-xl text-sm font-bold text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
                   />
                 </div>
 
@@ -148,7 +148,7 @@ export default async function DespesasPage() {
                     type="date"
                     name="data"
                     defaultValue={new Date().toISOString().split("T")[0]}
-                    className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                    className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
                   />
                 </div>
               </div>
@@ -179,7 +179,7 @@ export default async function DespesasPage() {
           {/* Adicionar Categoria Rápida */}
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-sm">
             <h3 className="text-xs font-bold text-stone-700 uppercase mb-3 flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-amber-600" />
+              <Tag className="w-3.5 h-3.5 text-stone-700" />
               Adicionar Nova Categoria
             </h3>
             <form action={criarCategoriaAction} className="flex gap-2">
@@ -188,11 +188,11 @@ export default async function DespesasPage() {
                 name="nome"
                 required
                 placeholder="Ex: Impostos, Água..."
-                className="flex-1 px-3 py-2 border rounded-xl text-xs"
+                className="flex-1 px-3 py-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-stone-900"
               />
               <button
                 type="submit"
-                className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3 py-2 rounded-xl"
+                className="bg-stone-900 hover:bg-black text-white font-bold text-xs px-3 py-2 rounded-xl transition"
               >
                 Criar
               </button>
@@ -203,7 +203,7 @@ export default async function DespesasPage() {
         {/* Lista de Despesas (Cards Mobile / Tabela Desktop) */}
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-base sm:text-lg font-bold text-stone-900 flex items-center gap-2">
-            <Receipt className="w-5 h-5 text-amber-600" />
+            <Receipt className="w-5 h-5 text-stone-700" />
             Lançamentos de Despesas ({despesas.length})
           </h2>
 
@@ -239,7 +239,7 @@ export default async function DespesasPage() {
                           Pago
                         </span>
                       ) : (
-                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-bold text-stone-800 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200">
                           Pendente
                         </span>
                       )}
@@ -293,7 +293,7 @@ export default async function DespesasPage() {
                               <CheckCircle2 className="w-3.5 h-3.5" /> Pago
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-amber-700 text-xs font-bold bg-amber-50 px-2.5 py-1 rounded-full">
+                            <span className="inline-flex items-center gap-1 text-stone-800 text-xs font-bold bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200">
                               <AlertCircle className="w-3.5 h-3.5" /> Pendente
                             </span>
                           )}

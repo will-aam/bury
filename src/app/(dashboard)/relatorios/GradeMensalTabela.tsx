@@ -51,7 +51,7 @@ export default function GradeMensalTabela({
                 {d}
               </th>
             ))}
-            <th className="p-3 text-right bg-amber-100 text-amber-950 font-black min-w-[70px]">
+            <th className="p-3 text-right bg-stone-900 text-white font-black min-w-[70px]">
               Total
             </th>
           </tr>
@@ -60,7 +60,7 @@ export default function GradeMensalTabela({
           {produtos.map((prod) => {
             const totalProd = totaisPorProduto[prod.id] || 0;
             return (
-              <tr key={prod.id} className="hover:bg-amber-50/40">
+              <tr key={prod.id} className="hover:bg-stone-50">
                 <td className="p-3 font-semibold text-stone-900 border-r bg-white sticky left-0 z-10">
                   {prod.nome}
                 </td>
@@ -70,14 +70,14 @@ export default function GradeMensalTabela({
                     <td
                       key={d}
                       className={`p-2 text-center font-mono ${
-                        qtd > 0 ? "font-bold text-stone-900 bg-amber-50/50" : "text-stone-300"
+                        qtd > 0 ? "font-bold text-stone-900 bg-stone-100/60" : "text-stone-300"
                       }`}
                     >
                       {qtd > 0 ? qtd : "-"}
                     </td>
                   );
                 })}
-                <td className="p-3 text-right font-black text-amber-950 bg-amber-50/60">
+                <td className="p-3 text-right font-black text-stone-900 bg-stone-100">
                   {totalProd}
                 </td>
               </tr>
@@ -94,7 +94,7 @@ export default function GradeMensalTabela({
                 {totaisPorDia[d] || "-"}
               </td>
             ))}
-            <td className="p-3 text-right font-black text-base text-amber-950 bg-amber-200">
+            <td className="p-3 text-right font-black text-base text-white bg-stone-900">
               {grandeTotal}
             </td>
           </tr>

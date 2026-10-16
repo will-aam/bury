@@ -116,80 +116,64 @@ export default function ListaEFormularioProdutos({
 
   return (
     <div className="space-y-6">
-      {/* 1. Header com Métricas de Catálogo */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block">
-              Total de Produtos
-            </span>
-            <div className="text-2xl font-black text-stone-900 mt-1">{produtosIniciais.length}</div>
-            <span className="text-xs text-stone-500">{totalAtivos} ativos para venda</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-            <Cake className="w-6 h-6" />
+      {/* 1. Header com Métricas Sutis */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="bg-white p-4 rounded-xl border border-stone-200">
+          <span className="text-xs font-medium text-stone-500 block">
+            Total de Produtos
+          </span>
+          <div className="text-xl font-bold text-stone-900 mt-0.5">
+            {produtosIniciais.length}
+            <span className="text-xs text-stone-400 font-normal ml-2">({totalAtivos} ativos)</span>
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block">
-              Preço Médio Padrão
-            </span>
-            <div className="text-2xl font-black text-stone-900 mt-1">
-              {formatarCentavosParaReal(precoMedioVarejo)}
-            </div>
-            <span className="text-xs text-stone-500">Média de varejo/balcão</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-            <TrendingUp className="w-6 h-6" />
+        <div className="bg-white p-4 rounded-xl border border-stone-200">
+          <span className="text-xs font-medium text-stone-500 block">
+            Preço Médio Padrão
+          </span>
+          <div className="text-xl font-bold text-stone-900 mt-0.5">
+            {formatarCentavosParaReal(precoMedioVarejo)}
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block">
-              Tabela Dupla Ativa
-            </span>
-            <div className="text-sm font-bold text-stone-800 mt-1 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              Padrão & Diferenciado
-            </div>
-            <span className="text-xs text-stone-500">Pronto para revenda e atacado</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700">
-            <Tag className="w-6 h-6" />
+        <div className="bg-white p-4 rounded-xl border border-stone-200">
+          <span className="text-xs font-medium text-stone-500 block">
+            Tabela de Preços
+          </span>
+          <div className="text-sm font-semibold text-stone-800 mt-1">
+            Varejo & Diferenciado
           </div>
         </div>
       </div>
 
-      {/* 2. Barra de Ações & Filtros */}
-      <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+      {/* 2. Barra de Busca e Filtros */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
           <input
             type="text"
-            placeholder="Buscar por nome do bolo ou sabor..."
+            placeholder="Buscar por produto..."
             value={busca}
             onChange={(e) => {
               setBusca(e.target.value);
               setPaginaAtual(1);
             }}
-            className="w-full pl-9 pr-3 py-2 bg-stone-50 hover:bg-stone-100/80 focus:bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-amber-500 outline-none transition"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-stone-200 rounded-lg text-xs text-stone-900 placeholder-stone-400 focus:border-stone-400 outline-none transition"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end flex-wrap">
           {/* Filtro Status */}
-          <div className="flex bg-stone-100 p-1 rounded-xl text-xs font-bold text-stone-600">
+          <div className="flex bg-stone-100 p-1 rounded-lg text-xs font-medium text-stone-600">
             <button
               type="button"
               onClick={() => {
                 setFiltroStatus("todos");
                 setPaginaAtual(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                filtroStatus === "todos" ? "bg-white text-stone-900 shadow-xs" : "hover:text-stone-900"
+              className={`px-2.5 py-1 rounded transition ${
+                filtroStatus === "todos" ? "bg-white text-stone-900 shadow-2xs font-semibold" : "hover:text-stone-900"
               }`}
             >
               Todos ({produtosIniciais.length})
@@ -200,8 +184,8 @@ export default function ListaEFormularioProdutos({
                 setFiltroStatus("ativos");
                 setPaginaAtual(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                filtroStatus === "ativos" ? "bg-white text-emerald-800 shadow-xs" : "hover:text-stone-900"
+              className={`px-2.5 py-1 rounded transition ${
+                filtroStatus === "ativos" ? "bg-white text-stone-900 shadow-2xs font-semibold" : "hover:text-stone-900"
               }`}
             >
               Ativos ({totalAtivos})
@@ -212,8 +196,8 @@ export default function ListaEFormularioProdutos({
                 setFiltroStatus("inativos");
                 setPaginaAtual(1);
               }}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                filtroStatus === "inativos" ? "bg-white text-stone-900 shadow-xs" : "hover:text-stone-900"
+              className={`px-2.5 py-1 rounded transition ${
+                filtroStatus === "inativos" ? "bg-white text-stone-900 shadow-2xs font-semibold" : "hover:text-stone-900"
               }`}
             >
               Inativos ({produtosIniciais.length - totalAtivos})
@@ -223,89 +207,82 @@ export default function ListaEFormularioProdutos({
           <button
             type="button"
             onClick={() => setMostrarForm(!mostrarForm)}
-            className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow transition"
+            className="inline-flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white font-medium px-3.5 py-2 rounded-lg text-xs transition"
           >
-            <Plus className="w-4 h-4" />
-            {mostrarForm ? "Fechar Cadastro" : "Novo Produto"}
+            <Plus className="w-3.5 h-3.5" />
+            {mostrarForm ? "Fechar" : "Novo Produto"}
           </button>
         </div>
       </div>
 
-      {/* 3. Painel Retrátil / Card de Cadastro Elegante */}
+      {/* 3. Formulário Minimalista de Cadastro de Produto */}
       {mostrarForm && (
-        <div className="bg-gradient-to-br from-amber-50/60 via-white to-stone-50 p-5 sm:p-6 rounded-2xl border-2 border-amber-200/80 shadow-md animate-in fade-in slide-in-from-top-3 duration-200">
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-amber-100">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center shadow-xs">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-stone-900 text-base">Cadastrar Novo Produto</h3>
-                <p className="text-xs text-stone-500">Defina o nome e os dois preços praticados</p>
-              </div>
+        <div className="bg-white p-5 rounded-xl border border-stone-200">
+          <div className="flex items-center justify-between pb-3 mb-4 border-b border-stone-100">
+            <div>
+              <h3 className="font-semibold text-stone-900 text-sm">Novo Produto</h3>
+              <p className="text-xs text-stone-500">Defina o nome, os preços e o rendimento</p>
             </div>
             <button
               type="button"
               onClick={() => setMostrarForm(false)}
-              className="text-stone-400 hover:text-stone-700 text-xs font-semibold px-2 py-1 rounded-md"
+              className="text-stone-400 hover:text-stone-600 text-xs font-medium"
             >
               Cancelar
             </button>
           </div>
 
           {erro && (
-            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
+            <div className="mb-4 p-2.5 bg-red-50 text-red-700 text-xs rounded-lg font-medium">
               {erro}
             </div>
           )}
 
           <form onSubmit={handleCriar} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
               <div className="md:col-span-5">
-                <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                  Nome do Bolo / Sabor
+                <label className="block text-xs font-medium text-stone-600 mb-1">
+                  Nome do Produto
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Bolo de Cenoura com Ganache"
+                  placeholder="Ex: Bolo de Cenoura"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none shadow-2xs"
+                  className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 focus:border-stone-400 outline-none"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
+                <label className="block text-xs font-medium text-stone-600 mb-1">
                   Preço Padrão (R$)
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ex: 30,00"
+                  placeholder="0,00"
                   value={preco}
                   onChange={(e) => handlePrecoChange(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-sm font-bold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none shadow-2xs"
+                  className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm font-medium text-stone-900 focus:border-stone-400 outline-none"
                 />
-                <span className="text-[10px] text-stone-500 mt-0.5 block font-medium">Varejo / Balcão</span>
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
+                <label className="block text-xs font-medium text-stone-600 mb-1">
                   Preço Diferenciado (R$)
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: 22,00"
+                  placeholder="0,00"
                   value={precoSecundario}
                   onChange={(e) => setPrecoSecundario(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-amber-50/60 border border-amber-300 rounded-xl text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-500 outline-none shadow-2xs"
+                  className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm font-medium text-stone-900 focus:border-stone-400 outline-none"
                 />
-                <span className="text-[10px] text-amber-800 mt-0.5 block font-medium">Revenda / Atacado</span>
               </div>
 
               <div className="md:col-span-1">
-                <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
+                <label className="block text-xs font-medium text-stone-600 mb-1">
                   Rend.
                 </label>
                 <input
@@ -313,19 +290,17 @@ export default function ListaEFormularioProdutos({
                   min="1"
                   value={rendimento}
                   onChange={(e) => setRendimento(parseInt(e.target.value) || 1)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none shadow-2xs"
+                  className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 focus:border-stone-400 outline-none"
                 />
-                <span className="text-[10px] text-stone-500 mt-0.5 block font-medium">Unid.</span>
               </div>
 
               <div className="md:col-span-2">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition shadow flex items-center justify-center gap-1.5"
+                  className="w-full bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white font-medium py-2 px-3 rounded-lg text-sm transition"
                 >
-                  <Plus className="w-4 h-4" />
-                  {isSubmitting ? "Salvando..." : "Salvar"}
+                  {isSubmitting ? "Salvando..." : "Salvar Produto"}
                 </button>
               </div>
             </div>
@@ -355,7 +330,7 @@ export default function ListaEFormularioProdutos({
                   setBusca("");
                   setPaginaAtual(1);
                 }}
-                className="text-amber-700 hover:underline font-bold ml-1"
+                className="text-stone-900 hover:underline font-bold ml-1"
               >
                 (Limpar busca)
               </button>
@@ -370,7 +345,7 @@ export default function ListaEFormularioProdutos({
                 setItensPorPagina(Number(e.target.value));
                 setPaginaAtual(1);
               }}
-              className="px-2 py-1 bg-stone-50 border border-stone-200 rounded-lg text-xs font-bold text-stone-700 outline-none focus:ring-1 focus:ring-amber-500"
+              className="px-2 py-1 bg-stone-50 border border-stone-200 rounded-lg text-xs font-bold text-stone-700 outline-none focus:ring-1 focus:ring-stone-900"
             >
               <option value={5}>5</option>
               <option value={8}>8</option>
@@ -408,7 +383,7 @@ export default function ListaEFormularioProdutos({
                   return (
                     <tr
                       key={p.id}
-                      className={`hover:bg-amber-50/40 transition-colors ${
+                      className={`hover:bg-stone-50 transition-colors ${
                         !p.ativo ? "opacity-60 bg-stone-50/50" : ""
                       }`}
                     >
@@ -448,7 +423,7 @@ export default function ListaEFormularioProdutos({
 
                       {/* Preço Diferenciado */}
                       <td className="py-3.5 px-4 text-right">
-                        <div className="inline-flex items-center gap-1.5 font-bold text-amber-900 bg-amber-50/80 px-2.5 py-1 rounded-lg border border-amber-200/60">
+                        <div className="inline-flex items-center gap-1.5 font-bold text-stone-900 bg-stone-100 px-2.5 py-1 rounded-lg border border-stone-200">
                           {formatarCentavosParaReal(p.precoSecundario || p.precoVenda)}
                         </div>
                       </td>
@@ -456,11 +431,11 @@ export default function ListaEFormularioProdutos({
                       {/* Status */}
                       <td className="py-3.5 px-3 text-center">
                         {p.ativo ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-700 text-xs font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                          <span className="inline-flex items-center gap-1 text-stone-900 text-xs font-semibold bg-stone-100 px-2.5 py-0.5 rounded-full border border-stone-200">
                             <CheckCircle2 className="w-3.5 h-3.5" /> Ativo
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-stone-500 text-xs font-bold bg-stone-100 px-2.5 py-1 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-stone-400 text-xs font-normal bg-stone-50 px-2.5 py-0.5 rounded-full">
                             <XCircle className="w-3.5 h-3.5" /> Inativo
                           </span>
                         )}
@@ -491,10 +466,10 @@ export default function ListaEFormularioProdutos({
                             <input type="hidden" name="ativo" value={p.ativo ? "true" : "false"} />
                             <button
                               type="submit"
-                              className={`text-xs font-bold px-2 py-1 rounded-md transition ${
+                              className={`text-xs font-medium px-2 py-1 rounded-md transition ${
                                 p.ativo
-                                  ? "text-stone-500 hover:text-stone-900 hover:bg-stone-100"
-                                  : "text-amber-800 bg-amber-100/70 hover:bg-amber-100 font-extrabold"
+                                  ? "text-stone-400 hover:text-stone-900 hover:bg-stone-100"
+                                  : "text-stone-900 bg-stone-200 hover:bg-stone-300 font-semibold"
                               }`}
                             >
                               {p.ativo ? "Desativar" : "Ativar"}
@@ -539,7 +514,7 @@ export default function ListaEFormularioProdutos({
                       onClick={() => setPaginaAtual(pg)}
                       className={`min-w-8 h-8 px-2 rounded-lg font-bold transition text-xs ${
                         pg === paginaAjustada
-                          ? "bg-amber-600 text-white shadow-xs"
+                          ? "bg-stone-900 text-white shadow-xs"
                           : "bg-white border border-stone-200 hover:bg-stone-50 text-stone-700"
                       }`}
                     >

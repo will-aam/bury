@@ -59,7 +59,7 @@ export default async function DetalheClientePage({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2">
-              <User className="w-6 h-6 sm:w-7 sm:h-7 text-amber-600" />
+              <User className="w-6 h-6 sm:w-7 sm:h-7 text-stone-700" />
               {cliente.nome}
             </h1>
             <p className="text-xs text-stone-500 mt-1">
@@ -72,7 +72,7 @@ export default async function DetalheClientePage({
 
             <Link
               href="/vendas/nova"
-              className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm shadow transition w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 bg-stone-900 hover:bg-black text-white font-bold px-4 py-2.5 rounded-xl text-sm shadow transition w-full sm:w-auto"
             >
               <ShoppingBag className="w-4 h-4" />
               Nova Venda

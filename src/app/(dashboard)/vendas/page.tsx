@@ -66,7 +66,7 @@ export default async function VendasPage({
 
         <Link
           href="/vendas/nova"
-          className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-5 rounded-xl shadow-md transition text-sm w-full sm:w-auto"
+          className="inline-flex items-center justify-center gap-2 bg-stone-900 hover:bg-black text-white font-bold py-3 px-5 rounded-xl shadow-md transition text-sm w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" />
           Lançar Nova Venda
@@ -97,8 +97,8 @@ export default async function VendasPage({
           href="/vendas?status=PARCIAL"
           className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
             statusFiltro === "PARCIAL"
-              ? "bg-amber-600 text-white shadow-xs"
-              : "bg-white text-amber-700 border border-amber-200 hover:bg-amber-50"
+              ? "bg-stone-800 text-white shadow-xs"
+              : "bg-white text-stone-800 border border-stone-200 hover:bg-stone-50"
           }`}
         >
           Parcial ({vendasCalculadas.filter((v) => v.statusCalculado === "PARCIAL").length})
@@ -144,7 +144,7 @@ export default async function VendasPage({
                     </span>
                   )}
                   {v.statusCalculado === "PARCIAL" && (
-                    <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 bg-stone-100 text-stone-800 text-xs font-bold px-2 py-0.5 rounded-full border border-stone-200">
                       <Clock className="w-3.5 h-3.5" /> Parcial
                     </span>
                   )}
@@ -262,7 +262,7 @@ export default async function VendasPage({
                         </span>
                       )}
                       {v.statusCalculado === "PARCIAL" && (
-                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                        <span className="inline-flex items-center gap-1 bg-stone-100 text-stone-800 text-xs font-bold px-2.5 py-1 rounded-full border border-stone-200">
                           <Clock className="w-3.5 h-3.5" /> Parcial
                         </span>
                       )}

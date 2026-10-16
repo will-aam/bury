@@ -165,7 +165,7 @@ export default function FormularioVendaRapida({
                 Cliente / Destino
               </label>
               {isClienteDiferenciado ? (
-                <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-bold text-stone-900 bg-stone-200 px-2 py-0.5 rounded-full">
                   ★ Cliente com Preço Diferenciado (Revenda/PJ)
                 </span>
               ) : (
@@ -177,7 +177,7 @@ export default function FormularioVendaRapida({
             <select
               value={clienteId}
               onChange={(e) => handleClienteChange(e.target.value)}
-              className="w-full px-4 py-3 border border-stone-300 rounded-xl text-base font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none bg-stone-50"
+              className="w-full px-4 py-3 border border-stone-300 rounded-xl text-base font-semibold text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none bg-stone-50"
             >
               {clientes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -195,7 +195,7 @@ export default function FormularioVendaRapida({
               type="date"
               value={dataVenda}
               onChange={(e) => setDataVenda(e.target.value)}
-              className="w-full px-4 py-3 border border-stone-300 rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-4 py-3 border border-stone-300 rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
             />
           </div>
         </div>
@@ -224,7 +224,7 @@ export default function FormularioVendaRapida({
                   onClick={() => setPrecoItemPersonalizado(p1)}
                   className={`px-2.5 py-1 rounded-lg font-bold transition border ${
                     isP1
-                      ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                      ? "bg-stone-900 text-white border-stone-900 shadow-xs"
                       : "bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200"
                   }`}
                   title="Aplicar Preço Padrão"
@@ -236,7 +236,7 @@ export default function FormularioVendaRapida({
                   onClick={() => setPrecoItemPersonalizado(p2)}
                   className={`px-2.5 py-1 rounded-lg font-bold transition border ${
                     isP2
-                      ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                      ? "bg-stone-900 text-white border-stone-900 shadow-xs"
                       : "bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200"
                   }`}
                   title="Aplicar Preço Diferenciado"
@@ -254,7 +254,7 @@ export default function FormularioVendaRapida({
             <select
               value={produtoSelecionadoId}
               onChange={(e) => handleProdutoChange(e.target.value)}
-              className="w-full px-3 py-2.5 border rounded-xl text-sm font-medium text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-3 py-2.5 border rounded-xl text-sm font-medium text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
             >
               {produtos.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -272,7 +272,7 @@ export default function FormularioVendaRapida({
               min="1"
               value={quantidadeItem}
               onChange={(e) => setQuantidadeItem(parseInt(e.target.value) || 1)}
-              className="w-full px-3 py-2.5 border rounded-xl text-sm font-bold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-3 py-2.5 border rounded-xl text-sm font-bold text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
             />
           </div>
 
@@ -282,7 +282,7 @@ export default function FormularioVendaRapida({
               type="text"
               value={precoItemPersonalizado}
               onChange={(e) => setPrecoItemPersonalizado(e.target.value)}
-              className="w-full px-3 py-2.5 border rounded-xl text-sm font-bold text-amber-900 bg-amber-50/50 focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-3 py-2.5 border rounded-xl text-sm font-bold text-stone-900 bg-stone-50 focus:ring-2 focus:ring-stone-900 outline-none"
             />
           </div>
 
@@ -311,7 +311,7 @@ export default function FormularioVendaRapida({
               </thead>
               <tbody className="divide-y divide-stone-100">
                 {itens.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-amber-50/40">
+                  <tr key={idx} className="hover:bg-stone-50">
                     <td className="p-3 font-semibold text-stone-900">{item.nome}</td>
                     <td className="p-3 text-center font-bold text-stone-800">{item.quantidade}</td>
                     <td className="p-3 text-right text-stone-700">
@@ -332,12 +332,12 @@ export default function FormularioVendaRapida({
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-amber-50/80 font-bold text-stone-900 border-t">
+              <tfoot className="bg-stone-100 font-bold text-stone-900 border-t">
                 <tr>
                   <td colSpan={3} className="p-4 text-right uppercase text-xs tracking-wider">
                     Total da Venda:
                   </td>
-                  <td className="p-4 text-right text-xl font-black text-amber-950">
+                  <td className="p-4 text-right text-xl font-black text-stone-900">
                     {formatarCentavosParaReal(totalVendaCentavos)}
                   </td>
                   <td></td>
@@ -388,7 +388,7 @@ export default function FormularioVendaRapida({
             onClick={() => setTipoPagamento("PARCIAL")}
             className={`p-4 rounded-xl border text-center font-bold transition ${
               tipoPagamento === "PARCIAL"
-                ? "bg-amber-600 text-white border-amber-600 shadow-md"
+                ? "bg-stone-900 text-white border-stone-900 shadow-md"
                 : "bg-stone-50 text-stone-700 hover:bg-stone-100 border-stone-200"
             }`}
           >
@@ -429,8 +429,8 @@ export default function FormularioVendaRapida({
         )}
 
         {tipoPagamento !== "QUITADO" && (
-          <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
-            <label className="block text-xs font-bold text-amber-900 mb-1">
+          <div className="p-4 bg-stone-100 rounded-xl border border-stone-200">
+            <label className="block text-xs font-bold text-stone-800 mb-1">
               Data Prevista de Pagamento (Opcional)
             </label>
             <input
@@ -458,7 +458,7 @@ export default function FormularioVendaRapida({
           type="button"
           disabled={isPending || itens.length === 0}
           onClick={handleFinalizar}
-          className="w-full bg-amber-600 hover:bg-amber-700 text-white font-black py-4 px-6 rounded-2xl shadow-lg transition text-lg flex items-center justify-center gap-3 disabled:opacity-50"
+          className="w-full bg-stone-900 hover:bg-black text-white font-black py-4 px-6 rounded-2xl shadow-lg transition text-lg flex items-center justify-center gap-3 disabled:opacity-50"
         >
           <CheckCircle2 className="w-6 h-6" />
           {isPending ? "Registrando Venda..." : `Concluir Venda (${formatarCentavosParaReal(totalVendaCentavos)})`}

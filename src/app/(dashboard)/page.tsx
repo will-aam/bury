@@ -142,7 +142,7 @@ export default async function DashboardPage() {
 
         <Link
           href="/vendas/nova"
-          className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition text-sm w-full sm:w-auto"
+          className="inline-flex items-center justify-center gap-2 bg-stone-900 hover:bg-black text-white font-bold py-3 px-6 rounded-xl shadow-md transition text-sm w-full sm:w-auto"
         >
           <ShoppingBag className="w-5 h-5" />
           Lançar Nova Venda
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
         <div className="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs sm:text-sm font-semibold text-stone-500">Resultado</span>
-            <div className="p-1.5 sm:p-2 bg-amber-50 text-amber-600 rounded-xl">
+            <div className="p-1.5 sm:p-2 bg-stone-100 text-stone-900 rounded-xl">
               <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
@@ -232,7 +232,7 @@ export default async function DashboardPage() {
             </div>
             <Link
               href="/vendas?status=PENDENTE"
-              className="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1"
+              className="text-xs font-bold text-stone-900 hover:underline flex items-center gap-1"
             >
               Ver todos <ArrowRight className="w-3 h-3" />
             </Link>
@@ -256,7 +256,7 @@ export default async function DashboardPage() {
                     </span>
                     <Link
                       href={`/clientes/${c.clienteId}`}
-                      className="text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 px-2.5 py-1 rounded-lg"
+                      className="text-xs font-bold bg-stone-900 hover:bg-black text-white px-2.5 py-1 rounded-lg transition"
                     >
                       Cobrar
                     </Link>
@@ -271,12 +271,12 @@ export default async function DashboardPage() {
         <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Cake className="w-5 h-5 text-amber-600" />
+              <Cake className="w-5 h-5 text-stone-700" />
               <h2 className="font-bold text-base sm:text-lg text-stone-900">Bolos Mais Vendidos</h2>
             </div>
             <Link
               href="/produtos"
-              className="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1"
+              className="text-xs font-bold text-stone-900 hover:underline flex items-center gap-1"
             >
               Produtos <ArrowRight className="w-3 h-3" />
             </Link>
