@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, User, Phone, MapPin, FileText, AlertCircle, ShoppingBag } from "lucide-react";
 
+import ModalExportarHistoricoCliente from "./ModalExportarHistoricoCliente";
+
 export const dynamic = "force-dynamic";
 
 export default async function DetalheClientePage({
@@ -65,13 +67,17 @@ export default async function DetalheClientePage({
             </p>
           </div>
 
-          <Link
-            href="/vendas/nova"
-            className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm shadow transition w-full sm:w-auto"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            Nova Venda para este Cliente
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+            <ModalExportarHistoricoCliente cliente={cliente} vendas={cliente.vendas} />
+
+            <Link
+              href="/vendas/nova"
+              className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm shadow transition w-full sm:w-auto"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Nova Venda
+            </Link>
+          </div>
         </div>
       </div>
 

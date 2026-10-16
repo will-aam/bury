@@ -8,12 +8,12 @@ export default async function NovaVendaPage() {
     prisma.cliente.findMany({
       where: { ativo: true },
       orderBy: [{ isPadrao: "desc" }, { nome: "asc" }],
-      select: { id: true, nome: true, isPadrao: true },
+      select: { id: true, nome: true, isPadrao: true, tipo: true },
     }),
     prisma.produto.findMany({
       where: { ativo: true },
       orderBy: { nome: "asc" },
-      select: { id: true, nome: true, precoVenda: true },
+      select: { id: true, nome: true, precoVenda: true, precoSecundario: true },
     }),
   ]);
 

@@ -6,19 +6,24 @@ import { revalidatePath } from "next/cache";
 export async function criarProdutoAction(formData: FormData) {
   const nome = (formData.get("nome") as string)?.trim();
   const precoStr = formData.get("preco") as string;
+  const precoSecundarioStr = formData.get("precoSecundario") as string;
   const rendimento = parseInt(formData.get("rendimento") as string) || 1;
 
   if (!nome || !precoStr) {
-    return { erro: "Nome e preço são obrigatórios." };
+    return { erro: "Nome e preço principal são obrigatórios." };
   }
 
   const precoCentavos = Math.round(parseFloat(precoStr.replace(",", ".")) * 100);
+  const precoSecundarioCentavos = precoSecundarioStr
+    ? Math.round(parseFloat(precoSecundarioStr.replace(",", ".")) * 100)
+    : precoCentavos;
 
   try {
     await prisma.produto.create({
       data: {
         nome,
         precoVenda: precoCentavos,
+        precoSecundario: precoSecundarioCentavos,
         rendimento,
       },
     });
@@ -38,6 +43,7 @@ export async function editarProdutoAction(formData: FormData) {
   const id = formData.get("id") as string;
   const nome = (formData.get("nome") as string)?.trim();
   const precoStr = formData.get("preco") as string;
+  const precoSecundarioStr = formData.get("precoSecundario") as string;
   const rendimento = parseInt(formData.get("rendimento") as string) || 1;
 
   if (!id || !nome || !precoStr) {
@@ -45,6 +51,9 @@ export async function editarProdutoAction(formData: FormData) {
   }
 
   const precoCentavos = Math.round(parseFloat(precoStr.replace(",", ".")) * 100);
+  const precoSecundarioCentavos = precoSecundarioStr
+    ? Math.round(parseFloat(precoSecundarioStr.replace(",", ".")) * 100)
+    : precoCentavos;
 
   try {
     await prisma.produto.update({
@@ -52,6 +61,7 @@ export async function editarProdutoAction(formData: FormData) {
       data: {
         nome,
         precoVenda: precoCentavos,
+        precoSecundario: precoSecundarioCentavos,
         rendimento,
       },
     });

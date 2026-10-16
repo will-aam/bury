@@ -90,11 +90,12 @@ model Cliente {
 model Produto {
   id           String        @id @default(cuid())
   nome         String        @unique
-  precoVenda   Int           // Armazenado em centavos (ex: 2500 para R$ 25,00)
-  rendimento   Int           @default(1)
-  ativo        Boolean       @default(true)
-  criadoEm     DateTime      @default(now())
-  atualizadoEm DateTime      @updatedAt
+  precoVenda       Int           // Preço Padrão (centavos)
+  precoSecundario  Int           @default(0) // Preço Diferenciado / Alternativo (centavos)
+  rendimento       Int           @default(1)
+  ativo            Boolean       @default(true)
+  criadoEm         DateTime      @default(now())
+  atualizadoEm     DateTime      @updatedAt
 
   itensVenda   ItemVenda[]
   fichaTecnica FichaTecnica?

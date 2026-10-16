@@ -8,6 +8,7 @@ interface Produto {
   id: string;
   nome: string;
   precoVenda: number;
+  precoSecundario: number;
   rendimento: number;
   ativo: boolean;
 }
@@ -20,6 +21,9 @@ export default function ModalEditarProduto({
   const [aberto, setAberto] = useState(false);
   const [nome, setNome] = useState(produto.nome);
   const [preco, setPreco] = useState((produto.precoVenda / 100).toFixed(2));
+  const [precoSecundario, setPrecoSecundario] = useState(
+    ((produto.precoSecundario || produto.precoVenda) / 100).toFixed(2)
+  );
   const [rendimento, setRendimento] = useState(produto.rendimento);
   const [erro, setErro] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -32,6 +36,7 @@ export default function ModalEditarProduto({
     formData.append("id", produto.id);
     formData.append("nome", nome);
     formData.append("preco", preco);
+    formData.append("precoSecundario", precoSecundario);
     formData.append("rendimento", rendimento.toString());
 
     startTransition(async () => {
@@ -104,7 +109,7 @@ export default function ModalEditarProduto({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                    Preço de Venda (R$)
+                    Preço Padrão (R$)
                   </label>
                   <input
                     type="text"
@@ -113,20 +118,35 @@ export default function ModalEditarProduto({
                     onChange={(e) => setPreco(e.target.value)}
                     className="w-full px-3 py-2 border rounded-xl text-sm font-bold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
                   />
+                  <span className="text-[11px] text-stone-500">Ex: Varejo / Direto</span>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                    Rendimento
+                    Preço Diferenciado (R$)
                   </label>
                   <input
-                    type="number"
-                    min="1"
-                    value={rendimento}
-                    onChange={(e) => setRendimento(parseInt(e.target.value) || 1)}
-                    className="w-full px-3 py-2 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                    type="text"
+                    required
+                    value={precoSecundario}
+                    onChange={(e) => setPrecoSecundario(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-xl text-sm font-bold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
                   />
+                  <span className="text-[11px] text-stone-500">Ex: Atacado / Revenda</span>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
+                  Rendimento (Unidades por receita)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={rendimento}
+                  onChange={(e) => setRendimento(parseInt(e.target.value) || 1)}
+                  className="w-full px-3 py-2 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                />
               </div>
 
               <div className="flex gap-2 pt-3">

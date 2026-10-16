@@ -10,12 +10,14 @@ interface ClienteOption {
   id: string;
   nome: string;
   isPadrao: boolean;
+  tipo?: string;
 }
 
 interface ProdutoOption {
   id: string;
   nome: string;
   precoVenda: number;
+  precoSecundario?: number;
 }
 
 interface ItemForm {
@@ -41,12 +43,24 @@ export default function FormularioVendaRapida({
   const [dataVenda, setDataVenda] = useState(new Date().toISOString().split("T")[0]);
   const [observacoes, setObservacoes] = useState("");
 
+  // Retorna se o cliente atual usa preço diferenciado (ex: Revendedor)
+  const clienteAtual = clientes.find((c) => c.id === clienteId);
+  const isClienteDiferenciado = clienteAtual?.tipo === "REVENDEDOR";
+
   // Itens da venda
   const [itens, setItens] = useState<ItemForm[]>([]);
   const [produtoSelecionadoId, setProdutoSelecionadoId] = useState(produtos[0]?.id || "");
   const [quantidadeItem, setQuantidadeItem] = useState(1);
+
+  const obterPrecoSugerido = (prodId: string, clienteDiff: boolean) => {
+    const prod = produtos.find((p) => p.id === prodId);
+    if (!prod) return "0.00";
+    const valorCentavos = clienteDiff && prod.precoSecundario ? prod.precoSecundario : prod.precoVenda;
+    return (valorCentavos / 100).toFixed(2);
+  };
+
   const [precoItemPersonalizado, setPrecoItemPersonalizado] = useState(
-    produtos[0]?.precoVenda ? (produtos[0].precoVenda / 100).toFixed(2) : "0.00"
+    obterPrecoSugerido(produtos[0]?.id || "", isClienteDiferenciado)
   );
 
   // Pagamento imediato
@@ -60,13 +74,18 @@ export default function FormularioVendaRapida({
   // Total da venda em centavos
   const totalVendaCentavos = itens.reduce((acc, i) => acc + i.quantidade * i.precoUnitario, 0);
 
+  // Ao trocar de cliente, reavalia o preço sugerido do produto atual
+  const handleClienteChange = (novoClienteId: string) => {
+    setClienteId(novoClienteId);
+    const cli = clientes.find((c) => c.id === novoClienteId);
+    const clienteDiff = cli?.tipo === "REVENDEDOR";
+    setPrecoItemPersonalizado(obterPrecoSugerido(produtoSelecionadoId, clienteDiff));
+  };
+
   // Ao trocar de produto selecionado no dropdown rápido
   const handleProdutoChange = (novoId: string) => {
     setProdutoSelecionadoId(novoId);
-    const prod = produtos.find((p) => p.id === novoId);
-    if (prod) {
-      setPrecoItemPersonalizado((prod.precoVenda / 100).toFixed(2));
-    }
+    setPrecoItemPersonalizado(obterPrecoSugerido(novoId, isClienteDiferenciado));
   };
 
   // Adicionar item à cesta (Enter)
@@ -141,17 +160,28 @@ export default function FormularioVendaRapida({
       <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-              Cliente / Destino
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-bold text-stone-700 uppercase">
+                Cliente / Destino
+              </label>
+              {isClienteDiferenciado ? (
+                <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                  ★ Cliente com Preço Diferenciado (Revenda/PJ)
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">
+                  Preço Padrão (Varejo/Consumidor)
+                </span>
+              )}
+            </div>
             <select
               value={clienteId}
-              onChange={(e) => setClienteId(e.target.value)}
+              onChange={(e) => handleClienteChange(e.target.value)}
               className="w-full px-4 py-3 border border-stone-300 rounded-xl text-base font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none bg-stone-50"
             >
               {clientes.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.nome} {c.isPadrao ? "(Padrão / Avulso)" : ""}
+                  {c.nome} {c.isPadrao ? "(Padrão / Avulso)" : ""} {c.tipo === "REVENDEDOR" ? "— [Diferenciado]" : ""}
                 </option>
               ))}
             </select>
@@ -173,12 +203,53 @@ export default function FormularioVendaRapida({
 
       {/* 2. ADICIONAR PRODUTOS (TECLADO RÁPIDO) */}
       <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-        <h2 className="text-sm font-bold text-stone-700 uppercase mb-4 tracking-wider">
-          Adicionar Bolos à Venda (Pressione Enter para adicionar)
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <h2 className="text-sm font-bold text-stone-700 uppercase tracking-wider">
+            Adicionar Bolos à Venda
+          </h2>
+          {/* Seletor rápido de preço para o produto selecionado */}
+          {(() => {
+            const prodAtual = produtos.find((p) => p.id === produtoSelecionadoId);
+            if (!prodAtual) return null;
+            const p1 = (prodAtual.precoVenda / 100).toFixed(2);
+            const p2 = ((prodAtual.precoSecundario || prodAtual.precoVenda) / 100).toFixed(2);
+            const isP1 = precoItemPersonalizado === p1;
+            const isP2 = precoItemPersonalizado === p2 && p1 !== p2;
+
+            return (
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-stone-500 font-medium">Preço rápido:</span>
+                <button
+                  type="button"
+                  onClick={() => setPrecoItemPersonalizado(p1)}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition border ${
+                    isP1
+                      ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                      : "bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200"
+                  }`}
+                  title="Aplicar Preço Padrão"
+                >
+                  Padrão: {formatarCentavosParaReal(prodAtual.precoVenda)}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrecoItemPersonalizado(p2)}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition border ${
+                    isP2
+                      ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                      : "bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200"
+                  }`}
+                  title="Aplicar Preço Diferenciado"
+                >
+                  Diferenciado: {formatarCentavosParaReal(prodAtual.precoSecundario || prodAtual.precoVenda)}
+                </button>
+              </div>
+            );
+          })()}
+        </div>
 
         <form onSubmit={adicionarItem} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-          <div className="sm:col-span-6">
+          <div className="sm:col-span-5">
             <label className="block text-xs font-bold text-stone-600 mb-1">Produto</label>
             <select
               value={produtoSelecionadoId}
@@ -187,7 +258,7 @@ export default function FormularioVendaRapida({
             >
               {produtos.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.nome} — {formatarCentavosParaReal(p.precoVenda)}
+                  {p.nome} — {formatarCentavosParaReal(p.precoVenda)} / {formatarCentavosParaReal(p.precoSecundario || p.precoVenda)}
                 </option>
               ))}
             </select>
@@ -205,13 +276,13 @@ export default function FormularioVendaRapida({
             />
           </div>
 
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-bold text-stone-600 mb-1">Preço Un. (R$)</label>
+          <div className="sm:col-span-3">
+            <label className="block text-xs font-bold text-stone-600 mb-1">Preço Unitário (R$)</label>
             <input
               type="text"
               value={precoItemPersonalizado}
               onChange={(e) => setPrecoItemPersonalizado(e.target.value)}
-              className="w-full px-3 py-2.5 border rounded-xl text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-3 py-2.5 border rounded-xl text-sm font-bold text-amber-900 bg-amber-50/50 focus:ring-2 focus:ring-amber-500 outline-none"
             />
           </div>
 
