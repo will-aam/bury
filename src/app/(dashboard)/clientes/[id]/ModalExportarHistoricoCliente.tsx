@@ -147,10 +147,9 @@ export default function ModalExportarHistoricoCliente({
       tipoFiltro === "mes"
         ? `Mês de referência: ${mesSelecionado}`
         : tipoFiltro === "periodo"
-        ? `Período: ${dataInicio ? formatarDataPtBr(dataInicio) : "Início"} até ${
-            dataFim ? formatarDataPtBr(dataFim) : "Hoje"
+          ? `Período: ${dataInicio ? formatarDataPtBr(dataInicio) : "Início"} até ${dataFim ? formatarDataPtBr(dataFim) : "Hoje"
           }`
-        : "Período: Todo o histórico";
+          : "Período: Todo o histórico";
 
     doc.text(periodoTexto, pageWidth - margin - 4, y + 6, { align: "right" });
     doc.text(`Endereço: ${cliente.endereco || "Não informado"}`, pageWidth - margin - 4, y + 12, {
@@ -346,35 +345,32 @@ export default function ModalExportarHistoricoCliente({
                   <button
                     type="button"
                     onClick={() => setTipoFiltro("todos")}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border ${
-                      tipoFiltro === "todos"
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border ${tipoFiltro === "todos"
                         ? "bg-amber-500 text-white border-amber-500 shadow-xs"
                         : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
-                    }`}
+                      }`}
                   >
                     Todo o Histórico
                   </button>
                   <button
                     type="button"
                     onClick={() => setTipoFiltro("mes")}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border ${
-                      tipoFiltro === "mes"
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border ${tipoFiltro === "mes"
                         ? "bg-amber-500 text-white border-amber-500 shadow-xs"
                         : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
-                    }`}
+                      }`}
                   >
                     Mês Específico
                   </button>
                   <button
                     type="button"
                     onClick={() => setTipoFiltro("periodo")}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border ${
-                      tipoFiltro === "periodo"
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition border ${tipoFiltro === "periodo"
                         ? "bg-amber-500 text-white border-amber-500 shadow-xs"
                         : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
-                    }`}
+                      }`}
                   >
-                    Vários Meses / De - Até
+                    Vários Meses
                   </button>
                 </div>
               </div>

@@ -3,14 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  PlusCircle, 
-  Users, 
-  Cake, 
-  Receipt, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  PlusCircle,
+  Users,
+  Cake,
+  Receipt,
+  BarChart3,
   LogOut,
   Sliders,
   Menu,
@@ -81,9 +81,9 @@ export default function MobileNavDrawer({
         />
       )}
 
-      {/* Sidebar Desktop + Drawer Mobile */}
+      {/* Sidebar Fixo Desktop (h-screen sticky top-0) + Drawer Mobile */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-amber-950 text-amber-50 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out md:static md:w-64 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-amber-950 text-amber-50 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out md:sticky md:top-0 md:h-screen md:w-64 md:translate-x-0 shrink-0 ${
           menuAberto ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
@@ -112,7 +112,7 @@ export default function MobileNavDrawer({
             className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold py-3 px-4 rounded-xl shadow transition"
           >
             <PlusCircle className="w-5 h-5" />
-            Nova Venda (F2)
+            Nova Venda
           </Link>
         </div>
 
@@ -126,11 +126,10 @@ export default function MobileNavDrawer({
                 key={link.href}
                 href={link.href}
                 onClick={fecharMenu}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm font-medium ${
-                  ativo
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm font-medium ${ativo
                     ? "bg-amber-800 text-white font-bold shadow-xs"
                     : "text-amber-200 hover:text-white hover:bg-amber-900/60"
-                }`}
+                  }`}
               >
                 <Icon className={`w-5 h-5 ${ativo ? "text-amber-300" : "text-amber-400"}`} />
                 {link.label}
@@ -157,8 +156,8 @@ export default function MobileNavDrawer({
         </div>
       </aside>
 
-      {/* Conteúdo Principal */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto pb-16 md:pb-0">
+      {/* Conteúdo Principal com Scroll Independente */}
+      <main className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
         <div className="p-3 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
           {children}
         </div>
@@ -168,18 +167,16 @@ export default function MobileNavDrawer({
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-stone-200 px-3 py-2 flex items-center justify-around z-30 shadow-lg">
         <Link
           href="/"
-          className={`flex flex-col items-center text-[10px] font-semibold ${
-            pathname === "/" ? "text-amber-600 font-bold" : "text-stone-500"
-          }`}
+          className={`flex flex-col items-center text-[10px] font-semibold ${pathname === "/" ? "text-amber-600 font-bold" : "text-stone-500"
+            }`}
         >
           <LayoutDashboard className="w-5 h-5 mb-0.5" />
           Início
         </Link>
         <Link
           href="/vendas"
-          className={`flex flex-col items-center text-[10px] font-semibold ${
-            pathname === "/vendas" ? "text-amber-600 font-bold" : "text-stone-500"
-          }`}
+          className={`flex flex-col items-center text-[10px] font-semibold ${pathname === "/vendas" ? "text-amber-600 font-bold" : "text-stone-500"
+            }`}
         >
           <ShoppingBag className="w-5 h-5 mb-0.5" />
           Vendas
@@ -192,18 +189,16 @@ export default function MobileNavDrawer({
         </Link>
         <Link
           href="/clientes"
-          className={`flex flex-col items-center text-[10px] font-semibold ${
-            pathname === "/clientes" ? "text-amber-600 font-bold" : "text-stone-500"
-          }`}
+          className={`flex flex-col items-center text-[10px] font-semibold ${pathname === "/clientes" ? "text-amber-600 font-bold" : "text-stone-500"
+            }`}
         >
           <Users className="w-5 h-5 mb-0.5" />
           Clientes
         </Link>
         <Link
           href="/despesas"
-          className={`flex flex-col items-center text-[10px] font-semibold ${
-            pathname === "/despesas" ? "text-amber-600 font-bold" : "text-stone-500"
-          }`}
+          className={`flex flex-col items-center text-[10px] font-semibold ${pathname === "/despesas" ? "text-amber-600 font-bold" : "text-stone-500"
+            }`}
         >
           <Receipt className="w-5 h-5 mb-0.5" />
           Gastos

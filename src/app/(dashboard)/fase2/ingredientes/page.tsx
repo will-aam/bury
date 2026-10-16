@@ -3,50 +3,10 @@ import { formatarCentavosParaReal } from "@/lib/formatadores";
 import { Sliders, Plus, History } from "lucide-react";
 import { revalidatePath } from "next/cache";
 
+import ModalEditarIngrediente from "./ModalEditarIngrediente";
+import { criarIngredienteAction } from "@/app/actions/ingredientes";
+
 export const dynamic = "force-dynamic";
-
-async function criarIngredienteAction(formData: FormData) {
-  "use server";
-  const nome = (formData.get("nome") as string)?.trim();
-  const unidadeBase = formData.get("unidadeBase") as any;
-  const unidadeCompra = formData.get("unidadeCompra") as any;
-  const tamanhoEmbalagem = parseFloat(formData.get("tamanhoEmbalagem") as string) || 1;
-  const precoEmbalagemStr = formData.get("precoEmbalagem") as string;
-
-  if (!nome || !precoEmbalagemStr) return;
-
-  const precoEmbalagemCentavos = Math.round(parseFloat(precoEmbalagemStr.replace(",", ".")) * 100);
-
-  // Conversão de unidade compra para unidade base
-  // Ex: 1 kg -> 1000 g | 1 l -> 1000 ml
-  let fatorMultiplicador = 1;
-  if (unidadeCompra === "KG" && unidadeBase === "GRAMA") fatorMultiplicador = 1000;
-  if (unidadeCompra === "L" && unidadeBase === "MILILITRO") fatorMultiplicador = 1000;
-
-  const totalUnidadesBase = tamanhoEmbalagem * fatorMultiplicador;
-  const custoUnidadeBase = precoEmbalagemCentavos / totalUnidadesBase; // centavos por g/ml/un
-
-  await prisma.$transaction(async (tx) => {
-    const ing = await tx.ingrediente.create({
-      data: {
-        nome,
-        unidadeBase,
-      },
-    });
-
-    await tx.precoIngrediente.create({
-      data: {
-        ingredienteId: ing.id,
-        unidadeCompra,
-        tamanhoEmbalagem,
-        precoEmbalagem: precoEmbalagemCentavos,
-        custoUnidadeBase,
-      },
-    });
-  });
-
-  revalidatePath("/fase2/ingredientes");
-}
 
 export default async function IngredientesPage() {
   const ingredientes = await prisma.ingrediente.findMany({
@@ -54,7 +14,6 @@ export default async function IngredientesPage() {
     include: {
       historicoPrecos: {
         orderBy: { dataRegistro: "desc" },
-        take: 1,
       },
     },
   });
@@ -66,7 +25,7 @@ export default async function IngredientesPage() {
           Ingredientes e Custo Unitário (Fase 2)
         </h1>
         <p className="text-sm text-stone-600 mt-1">
-          Cadastro de insumos com conversão automática de embalagens (kg → g, l → ml) e custo por unidade base
+          Cadastro de insumos com conversão automática de embalagens (kg → g, l → ml) e histórico de variações de preço
         </p>
       </div>
 
@@ -78,7 +37,10 @@ export default async function IngredientesPage() {
             Cadastrar Ingrediente
           </h2>
 
-          <form action={criarIngredienteAction} className="space-y-4">
+          <form action={async (formData) => {
+            "use server";
+            await criarIngredienteAction(formData);
+          }} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
                 Nome do Ingrediente
@@ -181,6 +143,7 @@ export default async function IngredientesPage() {
                   <th className="pb-3">Unidade Base</th>
                   <th className="pb-3 text-right">Última Embalagem</th>
                   <th className="pb-3 text-right">Custo Un. Base</th>
+                  <th className="pb-3 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -188,7 +151,14 @@ export default async function IngredientesPage() {
                   const preco = i.historicoPrecos[0];
                   return (
                     <tr key={i.id} className="hover:bg-stone-50">
-                      <td className="py-3 font-semibold text-stone-900">{i.nome}</td>
+                      <td className="py-3 font-semibold text-stone-900">
+                        {i.nome}
+                        {i.historicoPrecos.length > 1 && (
+                          <span className="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-900 text-[10px] rounded font-bold">
+                            {i.historicoPrecos.length} preços
+                          </span>
+                        )}
+                      </td>
                       <td className="py-3 text-xs text-stone-600">{i.unidadeBase}</td>
                       <td className="py-3 text-right text-stone-700 text-xs">
                         {preco ? (
@@ -202,6 +172,9 @@ export default async function IngredientesPage() {
                       </td>
                       <td className="py-3 text-right font-black text-amber-950">
                         {preco ? `R$ ${(preco.custoUnidadeBase / 100).toFixed(4)} / ${i.unidadeBase.toLowerCase()}` : "-"}
+                      </td>
+                      <td className="py-3 text-right">
+                        <ModalEditarIngrediente ingrediente={i} />
                       </td>
                     </tr>
                   );

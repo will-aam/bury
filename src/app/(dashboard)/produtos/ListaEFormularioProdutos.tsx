@@ -12,9 +12,10 @@ import {
   Tag,
   Layers,
   Sparkles,
-  ToggleLeft,
-  ToggleRight,
+  ChevronLeft,
+  ChevronRight,
   Filter,
+  Edit2,
 } from "lucide-react";
 import { criarProdutoAction, alternarStatusProdutoAction } from "@/app/actions/produtos";
 import ModalEditarProduto from "./ModalEditarProduto";
@@ -36,6 +37,10 @@ export default function ListaEFormularioProdutos({
   const [busca, setBusca] = useState("");
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativos" | "inativos">("todos");
   const [mostrarForm, setMostrarForm] = useState(false);
+
+  // Paginação
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [itensPorPagina, setItensPorPagina] = useState(8);
 
   // Estados do formulário de criação rápida
   const [nome, setNome] = useState("");
@@ -89,6 +94,15 @@ export default function ListaEFormularioProdutos({
       return true;
     });
   }, [produtosIniciais, busca, filtroStatus]);
+
+  // Paginação calculada
+  const totalPaginas = Math.max(1, Math.ceil(produtosFiltrados.length / itensPorPagina));
+  const paginaAjustada = Math.min(paginaAtual, totalPaginas);
+
+  const produtosPaginados = useMemo(() => {
+    const inicio = (paginaAjustada - 1) * itensPorPagina;
+    return produtosFiltrados.slice(inicio, inicio + itensPorPagina);
+  }, [produtosFiltrados, paginaAjustada, itensPorPagina]);
 
   // Métricas
   const totalAtivos = produtosIniciais.filter((p) => p.ativo).length;
@@ -154,17 +168,23 @@ export default function ListaEFormularioProdutos({
             type="text"
             placeholder="Buscar por nome do bolo ou sabor..."
             value={busca}
-            onChange={(e) => setBusca(e.target.value)}
+            onChange={(e) => {
+              setBusca(e.target.value);
+              setPaginaAtual(1);
+            }}
             className="w-full pl-9 pr-3 py-2 bg-stone-50 hover:bg-stone-100/80 focus:bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-amber-500 outline-none transition"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+        <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end flex-wrap">
           {/* Filtro Status */}
           <div className="flex bg-stone-100 p-1 rounded-xl text-xs font-bold text-stone-600">
             <button
               type="button"
-              onClick={() => setFiltroStatus("todos")}
+              onClick={() => {
+                setFiltroStatus("todos");
+                setPaginaAtual(1);
+              }}
               className={`px-3 py-1.5 rounded-lg transition ${
                 filtroStatus === "todos" ? "bg-white text-stone-900 shadow-xs" : "hover:text-stone-900"
               }`}
@@ -173,7 +193,10 @@ export default function ListaEFormularioProdutos({
             </button>
             <button
               type="button"
-              onClick={() => setFiltroStatus("ativos")}
+              onClick={() => {
+                setFiltroStatus("ativos");
+                setPaginaAtual(1);
+              }}
               className={`px-3 py-1.5 rounded-lg transition ${
                 filtroStatus === "ativos" ? "bg-white text-emerald-800 shadow-xs" : "hover:text-stone-900"
               }`}
@@ -182,7 +205,10 @@ export default function ListaEFormularioProdutos({
             </button>
             <button
               type="button"
-              onClick={() => setFiltroStatus("inativos")}
+              onClick={() => {
+                setFiltroStatus("inativos");
+                setPaginaAtual(1);
+              }}
               className={`px-3 py-1.5 rounded-lg transition ${
                 filtroStatus === "inativos" ? "bg-white text-stone-900 shadow-xs" : "hover:text-stone-900"
               }`}
@@ -304,127 +330,221 @@ export default function ListaEFormularioProdutos({
         </div>
       )}
 
-      {/* 4. Lista Principal de Produtos: Cards Modernos (Grid) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs text-stone-500 px-1">
-          <span>
-            Exibindo <strong>{produtosFiltrados.length}</strong> de {produtosIniciais.length} produtos
-          </span>
-          {busca && (
-            <button
-              onClick={() => setBusca("")}
-              className="text-amber-700 hover:underline font-bold"
+      {/* 4. Tabela de Produtos com Design Clean, Responsiva e Paginada */}
+      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+        {/* Topo da Tabela: Contadores e seletor de itens por página */}
+        <div className="p-4 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-stone-500">
+          <div className="flex items-center gap-2">
+            <span>
+              Mostrando{" "}
+              <strong>
+                {produtosFiltrados.length === 0
+                  ? 0
+                  : (paginaAjustada - 1) * itensPorPagina + 1}
+                -
+                {Math.min(paginaAjustada * itensPorPagina, produtosFiltrados.length)}
+              </strong>{" "}
+              de <strong>{produtosFiltrados.length}</strong> produtos
+            </span>
+            {busca && (
+              <button
+                onClick={() => {
+                  setBusca("");
+                  setPaginaAtual(1);
+                }}
+                className="text-amber-700 hover:underline font-bold ml-1"
+              >
+                (Limpar busca)
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <span>Linhas por página:</span>
+            <select
+              value={itensPorPagina}
+              onChange={(e) => {
+                setItensPorPagina(Number(e.target.value));
+                setPaginaAtual(1);
+              }}
+              className="px-2 py-1 bg-stone-50 border border-stone-200 rounded-lg text-xs font-bold text-stone-700 outline-none focus:ring-1 focus:ring-amber-500"
             >
-              Limpar busca
-            </button>
-          )}
+              <option value={5}>5</option>
+              <option value={8}>8</option>
+              <option value={12}>12</option>
+              <option value={20}>20</option>
+            </select>
+          </div>
         </div>
 
-        {produtosFiltrados.length === 0 ? (
-          <div className="bg-white p-12 rounded-2xl border border-stone-200 text-center">
+        {produtosPaginados.length === 0 ? (
+          <div className="p-12 text-center">
             <Cake className="w-12 h-12 text-stone-300 mx-auto mb-3" />
             <h3 className="font-bold text-stone-700 text-base">Nenhum produto encontrado</h3>
-            <p className="text-xs text-stone-500 mt-1">Tente buscar com outro termo ou ajuste os filtros.</p>
+            <p className="text-xs text-stone-500 mt-1">Tente ajustar a busca ou os filtros de status.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {produtosFiltrados.map((p) => {
-              const temDiferenca = p.precoSecundario && p.precoSecundario !== p.precoVenda;
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-stone-50/80 border-b border-stone-200 text-xs font-bold text-stone-500 uppercase tracking-wider">
+                <tr>
+                  <th className="py-3.5 px-4 sm:px-6">Produto / Sabor</th>
+                  <th className="py-3.5 px-3 text-center">Rendimento</th>
+                  <th className="py-3.5 px-4 text-right">Preço Padrão (Varejo)</th>
+                  <th className="py-3.5 px-4 text-right">Preço Diferenciado (Atacado)</th>
+                  <th className="py-3.5 px-3 text-center">Status</th>
+                  <th className="py-3.5 px-4 sm:px-6 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100">
+                {produtosPaginados.map((p) => {
+                  const temDiferenca = p.precoSecundario && p.precoSecundario !== p.precoVenda;
 
-              return (
-                <div
-                  key={p.id}
-                  className={`bg-white rounded-2xl border transition-all duration-200 shadow-xs hover:shadow-md flex flex-col justify-between overflow-hidden ${
-                    p.ativo ? "border-stone-200 hover:border-amber-300" : "border-stone-200/60 opacity-60 bg-stone-50/50"
-                  }`}
-                >
-                  {/* Topo do Card */}
-                  <div className="p-4 sm:p-5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h3 className="font-extrabold text-stone-900 text-base tracking-tight leading-snug">
-                            {p.nome}
-                          </h3>
-                          {p.nome.toUpperCase().includes("BB") && (
-                            <span className="px-2 py-0.5 bg-amber-100 text-amber-900 text-[10px] rounded-full font-bold">
-                              BB (Pequeno)
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-stone-500">
-                          <span className="flex items-center gap-1">
-                            <Layers className="w-3.5 h-3.5 text-stone-400" /> Rendimento: {p.rendimento} un
-                          </span>
-                        </div>
-                      </div>
+                  return (
+                    <tr
+                      key={p.id}
+                      className={`hover:bg-amber-50/40 transition-colors ${
+                        !p.ativo ? "opacity-60 bg-stone-50/50" : ""
+                      }`}
+                    >
+                      {/* Nome do Produto */}
+                      <td className="py-3.5 px-4 sm:px-6">
+                        <span className="font-bold text-stone-900">{p.nome}</span>
+                      </td>
 
-                      <div className="flex items-center gap-1">
-                        <ModalEditarProduto produto={p} />
-                      </div>
-                    </div>
-
-                    {/* Preços Lado a Lado (Design em Pílulas/Blocos Elegantes) */}
-                    <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-stone-100">
-                      <div className="bg-stone-50 p-2.5 rounded-xl border border-stone-200/60">
-                        <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">
-                          Preço Padrão
+                      {/* Rendimento */}
+                      <td className="py-3.5 px-3 text-center">
+                        <span className="inline-flex items-center gap-1 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-md font-medium">
+                          <Layers className="w-3 h-3 text-stone-400" />
+                          {p.rendimento} un
                         </span>
-                        <div className="text-base sm:text-lg font-black text-stone-900 mt-0.5">
-                          {formatarCentavosParaReal(p.precoVenda)}
-                        </div>
-                        <span className="text-[10px] text-stone-400 font-medium">Consumidor / Varejo</span>
-                      </div>
+                      </td>
 
-                      <div className="bg-amber-50/50 p-2.5 rounded-xl border border-amber-200/70">
-                        <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block flex items-center justify-between">
-                          Diferenciado
-                          {temDiferenca && (
-                            <span className="text-[9px] bg-amber-200/70 text-amber-900 px-1 py-0.2 rounded font-extrabold">
-                              Especial
-                            </span>
-                          )}
-                        </span>
-                        <div className="text-base sm:text-lg font-black text-amber-950 mt-0.5">
+                      {/* Preço Padrão */}
+                      <td className="py-3.5 px-4 text-right font-black text-stone-900 text-base">
+                        {formatarCentavosParaReal(p.precoVenda)}
+                      </td>
+
+                      {/* Preço Diferenciado */}
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="inline-flex items-center gap-1.5 font-bold text-amber-900 bg-amber-50/80 px-2.5 py-1 rounded-lg border border-amber-200/60">
                           {formatarCentavosParaReal(p.precoSecundario || p.precoVenda)}
                         </div>
-                        <span className="text-[10px] text-amber-700 font-medium">Revendedor / Atacado</span>
-                      </div>
-                    </div>
-                  </div>
+                      </td>
 
-                  {/* Rodapé do Card com Ação Rápida */}
-                  <div className="bg-stone-50/80 px-4 py-2.5 border-t border-stone-100 flex items-center justify-between text-xs">
-                    <span className="flex items-center gap-1.5 font-bold">
-                      {p.ativo ? (
-                        <>
-                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                          <span className="text-emerald-700">Disponível para venda</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="w-2 h-2 rounded-full bg-stone-400"></span>
-                          <span className="text-stone-500">Inativo</span>
-                        </>
-                      )}
+                      {/* Status */}
+                      <td className="py-3.5 px-3 text-center">
+                        {p.ativo ? (
+                          <span className="inline-flex items-center gap-1 text-emerald-700 text-xs font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Ativo
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-stone-500 text-xs font-bold bg-stone-100 px-2.5 py-1 rounded-full">
+                            <XCircle className="w-3.5 h-3.5" /> Inativo
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Ações */}
+                      <td className="py-3.5 px-4 sm:px-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {p.ativo ? (
+                            <ModalEditarProduto produto={p} />
+                          ) : (
+                            <span
+                              className="p-1.5 text-stone-300 cursor-not-allowed rounded-lg inline-block"
+                              title="Ative o produto para poder editá-lo"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </span>
+                          )}
+                          <form
+                            action={async (formData) => {
+                              await alternarStatusProdutoAction(formData);
+                            }}
+                          >
+                            <input type="hidden" name="id" value={p.id} />
+                            <input type="hidden" name="ativo" value={p.ativo ? "true" : "false"} />
+                            <button
+                              type="submit"
+                              className={`text-xs font-bold px-2 py-1 rounded-md transition ${
+                                p.ativo
+                                  ? "text-stone-500 hover:text-stone-900 hover:bg-stone-100"
+                                  : "text-amber-800 bg-amber-100/70 hover:bg-amber-100 font-extrabold"
+                              }`}
+                            >
+                              {p.ativo ? "Desativar" : "Ativar"}
+                            </button>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Rodapé da Tabela com Paginação */}
+        {totalPaginas > 1 && (
+          <div className="p-4 border-t border-stone-100 bg-stone-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-600">
+            <div>
+              Página <strong>{paginaAjustada}</strong> de <strong>{totalPaginas}</strong>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPaginaAtual((prev) => Math.max(1, prev - 1))}
+                disabled={paginaAjustada <= 1}
+                className="p-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                title="Página Anterior"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {/* Botões numéricos de página */}
+              {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pg) => {
+                // Exibe página 1, última página e as adjacentes
+                if (pg === 1 || pg === totalPaginas || Math.abs(pg - paginaAjustada) <= 1) {
+                  return (
+                    <button
+                      key={pg}
+                      type="button"
+                      onClick={() => setPaginaAtual(pg)}
+                      className={`min-w-8 h-8 px-2 rounded-lg font-bold transition text-xs ${
+                        pg === paginaAjustada
+                          ? "bg-amber-600 text-white shadow-xs"
+                          : "bg-white border border-stone-200 hover:bg-stone-50 text-stone-700"
+                      }`}
+                    >
+                      {pg}
+                    </button>
+                  );
+                } else if (
+                  (pg === 2 && paginaAjustada > 3) ||
+                  (pg === totalPaginas - 1 && paginaAjustada < totalPaginas - 2)
+                ) {
+                  return (
+                    <span key={pg} className="px-1 text-stone-400">
+                      ...
                     </span>
+                  );
+                }
+                return null;
+              })}
 
-                    <form action={async (formData) => {
-                      await alternarStatusProdutoAction(formData);
-                    }}>
-                      <input type="hidden" name="id" value={p.id} />
-                      <input type="hidden" name="ativo" value={p.ativo ? "true" : "false"} />
-                      <button
-                        type="submit"
-                        className="font-bold text-stone-500 hover:text-stone-900 transition flex items-center gap-1 text-[11px]"
-                      >
-                        {p.ativo ? "Pausar" : "Reativar"}
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              );
-            })}
+              <button
+                type="button"
+                onClick={() => setPaginaAtual((prev) => Math.min(totalPaginas, prev + 1))}
+                disabled={paginaAjustada >= totalPaginas}
+                className="p-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                title="Próxima Página"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
