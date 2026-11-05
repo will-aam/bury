@@ -104,7 +104,7 @@ export default function ModalEditarCliente({
                   required
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 bg-white focus:ring-2 focus:ring-stone-900 outline-none"
                 />
               </div>
 
@@ -115,10 +115,10 @@ export default function ModalEditarCliente({
                 <select
                   value={tipo}
                   onChange={(e) => setTipo(e.target.value as any)}
-                  className="w-full px-3 py-2 border rounded-xl text-sm text-stone-900 font-medium"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm text-stone-900 bg-white font-medium focus:ring-2 focus:ring-stone-900 outline-none"
                 >
-                  <option value="CONSUMIDOR_FINAL">Consumidor Final (Direto)</option>
-                  <option value="REVENDEDOR">Revendedor (Recorrente)</option>
+                  <option value="CONSUMIDOR_FINAL" className="text-stone-900 bg-white">Consumidor Final (Direto)</option>
+                  <option value="REVENDEDOR" className="text-stone-900 bg-white">Revendedor (Recorrente)</option>
                 </select>
               </div>
 
@@ -130,7 +130,7 @@ export default function ModalEditarCliente({
                   type="text"
                   value={telefone}
                   onChange={(e) => setTelefone(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-xl text-sm text-stone-900"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm text-stone-900 bg-white font-medium focus:ring-2 focus:ring-stone-900 outline-none"
                 />
               </div>
 
@@ -142,7 +142,7 @@ export default function ModalEditarCliente({
                   type="text"
                   value={endereco}
                   onChange={(e) => setEndereco(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-xl text-sm text-stone-900"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm text-stone-900 bg-white font-medium focus:ring-2 focus:ring-stone-900 outline-none"
                 />
               </div>
 
@@ -154,7 +154,7 @@ export default function ModalEditarCliente({
                   rows={2}
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-xl text-sm text-stone-900"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm text-stone-900 bg-white font-medium focus:ring-2 focus:ring-stone-900 outline-none"
                 />
               </div>
 

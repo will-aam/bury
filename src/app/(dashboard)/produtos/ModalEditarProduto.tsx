@@ -102,13 +102,13 @@ export default function ModalEditarProduto({
                   required
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 bg-white focus:ring-2 focus:ring-stone-900 outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                  <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
                     Preço Padrão (R$)
                   </label>
                   <input
@@ -116,13 +116,13 @@ export default function ModalEditarProduto({
                     required
                     value={preco}
                     onChange={(e) => setPreco(e.target.value)}
-                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm font-semibold text-stone-900 focus:border-stone-400 outline-none"
+                    className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm font-bold text-stone-900 bg-white focus:ring-2 focus:ring-stone-900 outline-none"
                   />
-                  <span className="text-[11px] text-stone-400">Varejo</span>
+                  <span className="text-[11px] text-stone-500 font-medium">Varejo</span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                  <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
                     Preço Diferenciado (R$)
                   </label>
                   <input
@@ -130,14 +130,14 @@ export default function ModalEditarProduto({
                     required
                     value={precoSecundario}
                     onChange={(e) => setPrecoSecundario(e.target.value)}
-                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm font-semibold text-stone-900 focus:border-stone-400 outline-none"
+                    className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm font-bold text-stone-900 bg-white focus:ring-2 focus:ring-stone-900 outline-none"
                   />
-                  <span className="text-[11px] text-stone-400">Atacado</span>
+                  <span className="text-[11px] text-stone-500 font-medium">Atacado</span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1">
+                <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
                   Rendimento (Unidades por receita)
                 </label>
                 <input
@@ -145,7 +145,7 @@ export default function ModalEditarProduto({
                   min="1"
                   value={rendimento}
                   onChange={(e) => setRendimento(parseInt(e.target.value) || 1)}
-                  className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm text-stone-900 focus:border-stone-400 outline-none"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 bg-white focus:ring-2 focus:ring-stone-900 outline-none"
                 />
               </div>
 
