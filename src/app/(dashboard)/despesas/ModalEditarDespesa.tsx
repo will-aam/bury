@@ -9,6 +9,12 @@ interface Categoria {
   nome: string;
 }
 
+interface IngredienteOption {
+  id: string;
+  nome: string;
+  unidadeBase: string;
+}
+
 interface Despesa {
   id: string;
   descricao: string;
@@ -17,18 +23,22 @@ interface Despesa {
   valor: number;
   data: string | Date;
   status: "PAGO" | "PENDENTE";
+  ingredienteId?: string | null;
 }
 
 export default function ModalEditarDespesa({
   despesa,
   categorias,
+  ingredientes = [],
 }: {
   despesa: Despesa;
   categorias: Categoria[];
+  ingredientes?: IngredienteOption[];
 }) {
   const [aberto, setAberto] = useState(false);
   const [descricao, setDescricao] = useState(despesa.descricao);
   const [categoriaId, setCategoriaId] = useState(despesa.categoriaId);
+  const [ingredienteId, setIngredienteId] = useState(despesa.ingredienteId || "");
   const [quantidade, setQuantidade] = useState(
     despesa.quantidade != null ? despesa.quantidade.toString() : "1"
   );
@@ -54,6 +64,7 @@ export default function ModalEditarDespesa({
     formData.append("id", despesa.id);
     formData.append("descricao", descricao);
     formData.append("categoriaId", categoriaId);
+    formData.append("ingredienteId", ingredienteId);
     formData.append("quantidade", quantidade);
     formData.append("valor", valor);
     formData.append("status", status);
@@ -154,6 +165,27 @@ export default function ModalEditarDespesa({
                   {categorias.map((c) => (
                     <option key={c.id} value={c.id} className="text-stone-900 bg-white py-1">
                       {c.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 uppercase mb-1 flex items-center justify-between">
+                  <span>Vincular Insumo / Ingrediente</span>
+                  <span className="text-[10px] text-amber-700 font-semibold lowercase bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                    Atualiza Ficha Técnica
+                  </span>
+                </label>
+                <select
+                  value={ingredienteId}
+                  onChange={(e) => setIngredienteId(e.target.value)}
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-sm font-medium text-stone-900 bg-white outline-none focus:ring-2 focus:ring-stone-900 focus:border-stone-900"
+                >
+                  <option value="">Nenhum (Gasto geral / Outros)</option>
+                  {ingredientes.map((ing) => (
+                    <option key={ing.id} value={ing.id}>
+                      {ing.nome} ({ing.unidadeBase === "UNIDADE" ? "unidade" : "kg"})
                     </option>
                   ))}
                 </select>

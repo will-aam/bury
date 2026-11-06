@@ -22,6 +22,17 @@ interface Categoria {
   nome: string;
 }
 
+export interface IngredienteOption {
+  id: string;
+  nome: string;
+  unidadeBase: string;
+  historicoPrecos?: Array<{
+    precoEmbalagem: number;
+    tamanhoEmbalagem: number;
+    unidadeCompra: string;
+  }>;
+}
+
 interface DespesaItem {
   id: string;
   data: string | Date;
@@ -31,6 +42,8 @@ interface DespesaItem {
   quantidade: number;
   valor: number;
   status: "PAGO" | "PENDENTE";
+  ingredienteId?: string | null;
+  ingrediente?: { id: string; nome: string; unidadeBase: string } | null;
 }
 
 interface ListaDespesasProps {
@@ -43,6 +56,7 @@ interface ListaDespesasProps {
   buscaInicial: string;
   statusInicial: string;
   categoriaInicial: string;
+  ingredientes?: IngredienteOption[];
 }
 
 export default function ListaDespesasClient({
@@ -55,6 +69,7 @@ export default function ListaDespesasClient({
   buscaInicial,
   statusInicial,
   categoriaInicial,
+  ingredientes = [],
 }: ListaDespesasProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -67,6 +82,7 @@ export default function ListaDespesasClient({
   // Estados do formulário de criação rápida
   const [descricao, setDescricao] = useState("");
   const [categoriaId, setCategoriaId] = useState(categorias[0]?.id || "");
+  const [ingredienteId, setIngredienteId] = useState("");
   const [quantidade, setQuantidade] = useState("1");
   const [valor, setValor] = useState("");
   const [data, setData] = useState(new Date().toISOString().split("T")[0]);
@@ -119,6 +135,7 @@ export default function ListaDespesasClient({
     const formData = new FormData();
     formData.append("descricao", descricao);
     formData.append("categoriaId", categoriaId || categorias[0]?.id || "");
+    formData.append("ingredienteId", ingredienteId);
     formData.append("quantidade", quantidade || "1");
     formData.append("valor", valor);
     formData.append("data", data);
@@ -130,6 +147,7 @@ export default function ListaDespesasClient({
         setErroForm(res.erro);
       } else {
         setDescricao("");
+        setIngredienteId("");
         setQuantidade("1");
         setValor("");
         setData(new Date().toISOString().split("T")[0]);
@@ -205,10 +223,47 @@ export default function ListaDespesasClient({
               </select>
             </div>
 
+            <div>
+              <label className="block text-xs font-bold text-stone-700 uppercase mb-1 flex items-center justify-between">
+                <span>Vincular Insumo / Ingrediente</span>
+                <span className="text-[10px] text-amber-700 font-semibold lowercase bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                  Atualiza Fichas Técnicas
+                </span>
+              </label>
+              <select
+                value={ingredienteId}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  setIngredienteId(id);
+                  if (id) {
+                    const ing = ingredientes.find((i) => i.id === id);
+                    if (ing) {
+                      if (!descricao || descricao.startsWith("Compra ")) {
+                        setDescricao(`Compra ${ing.nome}`);
+                      }
+                    }
+                  }
+                }}
+                className="w-full px-3 py-2.5 border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none bg-white"
+              >
+                <option value="">Nenhum (Gasto geral / Outros)</option>
+                {ingredientes.map((ing) => (
+                  <option key={ing.id} value={ing.id}>
+                    {ing.nome} ({ing.unidadeBase === "UNIDADE" ? "unidade" : "kg"})
+                  </option>
+                ))}
+              </select>
+              {ingredienteId && (
+                <p className="text-[11px] text-amber-800 bg-amber-50/90 border border-amber-200/70 p-2 rounded-lg mt-1.5 leading-tight">
+                  💡 <strong>Cálculo Automático:</strong> Ao salvar, o custo deste insumo será atualizado e todas as fichas técnicas de bolos que usam ele serão recalculadas sozinhas!
+                </p>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                  Quantidade
+                  Quantidade {ingredienteId ? (ingredientes.find((i) => i.id === ingredienteId)?.unidadeBase === "UNIDADE" ? "(un)" : "(kg)") : ""}
                 </label>
                 <input
                   type="number"
@@ -392,7 +447,14 @@ export default function ListaDespesasClient({
                 className="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs flex items-center justify-between gap-3"
               >
                 <div className="space-y-1">
-                  <div className="font-bold text-stone-900 text-sm">{d.descricao}</div>
+                  <div className="font-bold text-stone-900 text-sm flex items-center gap-1.5 flex-wrap">
+                    <span>{d.descricao}</span>
+                    {d.ingrediente && (
+                      <span className="text-[10px] font-bold bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded border border-amber-200">
+                        🌾 {d.ingrediente.nome}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[10px] bg-stone-100 text-stone-700 px-2 py-0.5 rounded-full font-medium">
                       {d.categoria.nome}
@@ -420,7 +482,7 @@ export default function ListaDespesasClient({
                         Pendente
                       </span>
                     )}
-                    <ModalEditarDespesa despesa={d} categorias={categorias} />
+                    <ModalEditarDespesa despesa={d} categorias={categorias} ingredientes={ingredientes} />
                   </div>
                 </div>
               </div>
@@ -457,7 +519,14 @@ export default function ListaDespesasClient({
                         {formatarDataPtBr(d.data)}
                       </td>
                       <td className="py-3 font-semibold text-stone-900">
-                        {d.descricao}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span>{d.descricao}</span>
+                          {d.ingrediente && (
+                            <span className="text-[10px] font-bold bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded border border-amber-200">
+                              🌾 {d.ingrediente.nome}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3">
                         <span className="bg-stone-100 text-stone-700 px-2.5 py-1 rounded-full text-xs font-medium">
@@ -482,7 +551,7 @@ export default function ListaDespesasClient({
                         )}
                       </td>
                       <td className="py-3 text-center">
-                        <ModalEditarDespesa despesa={d} categorias={categorias} />
+                        <ModalEditarDespesa despesa={d} categorias={categorias} ingredientes={ingredientes} />
                       </td>
                     </tr>
                   ))

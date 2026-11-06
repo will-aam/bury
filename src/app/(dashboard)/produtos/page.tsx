@@ -4,16 +4,28 @@ import ListaEFormularioProdutos from "./ListaEFormularioProdutos";
 export const dynamic = "force-dynamic";
 
 export default async function ProdutosPage() {
-  const produtos = await prisma.produto.findMany({
-    orderBy: { nome: "asc" },
-    include: {
-      fichaTecnica: {
-        include: {
-          itens: true,
+  const [produtos, ingredientes] = await Promise.all([
+    prisma.produto.findMany({
+      orderBy: { nome: "asc" },
+      include: {
+        fichaTecnica: {
+          include: {
+            itens: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.ingrediente.findMany({
+      where: { ativo: true },
+      orderBy: { nome: "asc" },
+      include: {
+        historicoPrecos: {
+          orderBy: { dataRegistro: "desc" },
+          take: 1,
+        },
+      },
+    }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -29,7 +41,7 @@ export default async function ProdutosPage() {
         </div>
       </div>
 
-      <ListaEFormularioProdutos produtosIniciais={produtos} />
+      <ListaEFormularioProdutos produtosIniciais={produtos} ingredientes={ingredientes as any} />
     </div>
   );
 }

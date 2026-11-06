@@ -32,10 +32,23 @@ interface Produto {
   fichaTecnica?: FichaTecnicaData | null;
 }
 
+export interface IngredienteFichaOption {
+  id: string;
+  nome: string;
+  unidadeBase: string;
+  historicoPrecos?: Array<{
+    precoEmbalagem: number;
+    tamanhoEmbalagem: number;
+    unidadeCompra: string;
+  }>;
+}
+
 export default function ListaEFormularioProdutos({
   produtosIniciais,
+  ingredientes = [],
 }: {
   produtosIniciais: Produto[];
+  ingredientes?: IngredienteFichaOption[];
 }) {
   const [busca, setBusca] = useState("");
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativos" | "inativos">("todos");
@@ -446,7 +459,7 @@ export default function ListaEFormularioProdutos({
                         <div className="flex items-center justify-end gap-2">
                           {p.ativo ? (
                             <>
-                              <ModalFichaTecnica produto={p} />
+                              <ModalFichaTecnica produto={p} ingredientes={ingredientes} />
                               <ModalEditarProduto produto={p} />
                             </>
                           ) : (

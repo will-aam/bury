@@ -45,7 +45,8 @@ export default async function DespesasPage(props: DespesasPageProps) {
   // 2. Total de itens com o filtro atual (para paginação)
   // 3. Despesas da página solicitada (com take e skip)
   // 4. Lista de categorias ativas
-  const [agregadoTotal, totalItens, despesas, categorias] = await Promise.all([
+  // 5. Lista de ingredientes ativos para vincular às compras
+  const [agregadoTotal, totalItens, despesas, categorias, ingredientes] = await Promise.all([
     prisma.despesa.aggregate({
       _sum: { valor: true },
     }),
@@ -59,12 +60,25 @@ export default async function DespesasPage(props: DespesasPageProps) {
         categoria: {
           select: { id: true, nome: true },
         },
+        ingrediente: {
+          select: { id: true, nome: true, unidadeBase: true },
+        },
       },
     }),
     prisma.categoriaDespesa.findMany({
       where: { ativo: true },
       orderBy: { nome: "asc" },
       select: { id: true, nome: true },
+    }),
+    prisma.ingrediente.findMany({
+      where: { ativo: true },
+      orderBy: { nome: "asc" },
+      include: {
+        historicoPrecos: {
+          orderBy: { dataRegistro: "desc" },
+          take: 1,
+        },
+      },
     }),
   ]);
 
@@ -103,6 +117,7 @@ export default async function DespesasPage(props: DespesasPageProps) {
         buscaInicial={busca}
         statusInicial={status}
         categoriaInicial={categoria}
+        ingredientes={ingredientes as any}
       />
     </div>
   );

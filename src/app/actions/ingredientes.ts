@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { recalcularFichasPorIngrediente } from "@/lib/fichas";
 
 export async function criarIngredienteAction(formData: FormData) {
   const nome = (formData.get("nome") as string)?.trim();
@@ -41,6 +42,9 @@ export async function criarIngredienteAction(formData: FormData) {
     });
 
     revalidatePath("/fase2/ingredientes");
+    revalidatePath("/produtos");
+    revalidatePath("/vendas/nova");
+    revalidatePath("/relatorios");
     return { sucesso: true };
   } catch (error: any) {
     if (error.code === "P2002") {
@@ -89,7 +93,17 @@ export async function editarIngredienteAction(formData: FormData) {
       });
     });
 
+    await recalcularFichasPorIngrediente(
+      id,
+      precoCentavos,
+      quantidade,
+      unidadeCompra === "UNIDADE" ? "UNIDADE" : "KG"
+    );
+
     revalidatePath("/fase2/ingredientes");
+    revalidatePath("/produtos");
+    revalidatePath("/vendas/nova");
+    revalidatePath("/relatorios");
     return { sucesso: true };
   } catch (error: any) {
     if (error.code === "P2002") {

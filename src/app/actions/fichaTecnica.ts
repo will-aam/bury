@@ -9,6 +9,7 @@ interface ItemFichaInput {
   precoEmbalagem: number; // centavos
   tamanhoEmbalagem: number; // peso total ou unidades do pacote
   quantidade: number; // quantidade gasta na receita
+  ingredienteId?: string | null;
 }
 
 export async function salvarFichaTecnicaAction(
@@ -64,6 +65,7 @@ export async function salvarFichaTecnicaAction(
             tamanhoEmbalagem: item.tamanhoEmbalagem,
             quantidade: item.quantidade,
             custoCalculado,
+            ingredienteId: item.ingredienteId || null,
           },
         });
       }

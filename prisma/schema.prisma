@@ -162,6 +162,9 @@ model Despesa {
   criadoEm     DateTime         @default(now())
   atualizadoEm DateTime         @updatedAt
 
+  ingredienteId String?
+  ingrediente   Ingrediente?     @relation(fields: [ingredienteId], references: [id])
+
   @@index([data(sort: Desc)])
   @@index([categoriaId])
 }
@@ -178,6 +181,7 @@ model Ingrediente {
 
   historicoPrecos PrecoIngrediente[]
   itensFicha      ItemFicha[]
+  despesas        Despesa[]
 }
 
 model PrecoIngrediente {

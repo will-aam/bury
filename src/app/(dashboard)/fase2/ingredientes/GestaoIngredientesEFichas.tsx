@@ -217,6 +217,7 @@ export default function GestaoIngredientesEFichas({
           precoEmbalagem: precoCentavos,
           tamanhoEmbalagem: tam,
           quantidade: qtd,
+          ingredienteId: i.ingredienteId && i.ingredienteId !== "custom" ? i.ingredienteId : null,
         };
       });
 

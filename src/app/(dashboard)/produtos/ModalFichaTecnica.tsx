@@ -13,7 +13,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Layers,
-  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 export interface ItemFichaData {
@@ -24,12 +24,24 @@ export interface ItemFichaData {
   tamanhoEmbalagem: number;
   quantidade: number;
   custoCalculado: number; // centavos
+  ingredienteId?: string | null;
 }
 
 export interface FichaTecnicaData {
   id?: string;
   observacoes?: string | null;
   itens: ItemFichaData[];
+}
+
+export interface IngredienteItemModal {
+  id: string;
+  nome: string;
+  unidadeBase: string;
+  historicoPrecos?: Array<{
+    precoEmbalagem: number;
+    tamanhoEmbalagem: number;
+    unidadeCompra: string;
+  }>;
 }
 
 interface ModalFichaTecnicaProps {
@@ -41,36 +53,53 @@ interface ModalFichaTecnicaProps {
     precoSecundario: number;
     fichaTecnica?: FichaTecnicaData | null;
   };
+  ingredientes?: IngredienteItemModal[];
 }
 
-export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
+interface ItemFichaRow {
+  ingredienteId: string;
+  nomeInsumo: string;
+  unidadeMedida: "KG" | "UNIDADE";
+  precoEmbalagemStr: string;
+  tamanhoEmbalagemStr: string;
+  quantidadeStr: string;
+}
+
+export default function ModalFichaTecnica({
+  produto,
+  ingredientes = [],
+}: ModalFichaTecnicaProps) {
   const [aberto, setAberto] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
 
   // Inicializar itens da ficha
-  const itensIniciais = produto.fichaTecnica?.itens?.map((i) => ({
-    nomeInsumo: i.nomeInsumo,
-    unidadeMedida: (i.unidadeMedida === "UNIDADE" ? "UNIDADE" : "KG") as "KG" | "UNIDADE",
-    precoEmbalagemStr: (i.precoEmbalagem / 100).toFixed(2),
-    tamanhoEmbalagemStr: i.tamanhoEmbalagem.toString(),
-    quantidadeStr: i.quantidade.toString(),
-  })) || [];
+  const itensIniciais: ItemFichaRow[] =
+    produto.fichaTecnica?.itens?.map((i) => {
+      let ingId = i.ingredienteId || "";
+      if (!ingId && ingredientes.length > 0) {
+        const match = ingredientes.find(
+          (ing) => ing.nome.trim().toLowerCase() === i.nomeInsumo.trim().toLowerCase()
+        );
+        if (match) ingId = match.id;
+      }
+      return {
+        ingredienteId: ingId,
+        nomeInsumo: i.nomeInsumo,
+        unidadeMedida: (i.unidadeMedida === "UNIDADE" ? "UNIDADE" : "KG") as "KG" | "UNIDADE",
+        precoEmbalagemStr: (i.precoEmbalagem / 100).toFixed(2),
+        tamanhoEmbalagemStr: i.tamanhoEmbalagem.toString(),
+        quantidadeStr: i.quantidade.toString(),
+      };
+    }) || [];
 
-  const [itens, setItens] = useState<
-    Array<{
-      nomeInsumo: string;
-      unidadeMedida: "KG" | "UNIDADE";
-      precoEmbalagemStr: string;
-      tamanhoEmbalagemStr: string;
-      quantidadeStr: string;
-    }>
-  >(
+  const [itens, setItens] = useState<ItemFichaRow[]>(
     itensIniciais.length > 0
       ? itensIniciais
       : [
           {
+            ingredienteId: "",
             nomeInsumo: "",
             unidadeMedida: "KG",
             precoEmbalagemStr: "",
@@ -87,6 +116,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
     setItens([
       ...itens,
       {
+        ingredienteId: "",
         nomeInsumo: "",
         unidadeMedida: "KG",
         precoEmbalagemStr: "",
@@ -102,11 +132,52 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
 
   const atualizarItem = (
     idx: number,
-    campo: "nomeInsumo" | "unidadeMedida" | "precoEmbalagemStr" | "tamanhoEmbalagemStr" | "quantidadeStr",
+    campo: keyof ItemFichaRow,
     valor: any
   ) => {
     const novos = [...itens];
     novos[idx] = { ...novos[idx], [campo]: valor };
+    setItens(novos);
+  };
+
+  const selecionarIngrediente = (idx: number, id: string) => {
+    if (!id) {
+      const novos = [...itens];
+      novos[idx] = {
+        ...novos[idx],
+        ingredienteId: "",
+      };
+      setItens(novos);
+      return;
+    }
+
+    if (id === "custom") {
+      const novos = [...itens];
+      novos[idx] = {
+        ...novos[idx],
+        ingredienteId: "custom",
+      };
+      setItens(novos);
+      return;
+    }
+
+    const ing = ingredientes.find((i) => i.id === id);
+    if (!ing) return;
+
+    const ultimoPreco = ing.historicoPrecos?.[0];
+    const unidadeMedida: "KG" | "UNIDADE" = ing.unidadeBase === "UNIDADE" ? "UNIDADE" : "KG";
+    const precoStr = ultimoPreco ? (ultimoPreco.precoEmbalagem / 100).toFixed(2) : "0.00";
+    const tamStr = ultimoPreco ? ultimoPreco.tamanhoEmbalagem.toString() : "1";
+
+    const novos = [...itens];
+    novos[idx] = {
+      ...novos[idx],
+      ingredienteId: ing.id,
+      nomeInsumo: ing.nome,
+      unidadeMedida,
+      precoEmbalagemStr: precoStr,
+      tamanhoEmbalagemStr: tamStr,
+    };
     setItens(novos);
   };
 
@@ -134,20 +205,14 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
   const custoUnitarioCentavos = Math.round(custoTotalReceitaCentavos / rendimento);
 
   // Soma dos Volumes / Quantidades por tipo de unidade
-  const unidadesUsadas = Array.from(new Set(itensCalculados.filter((i) => i.nomeInsumo.trim()).map((i) => i.unidadeMedida)));
+  const unidadesUsadas = Array.from(
+    new Set(itensCalculados.filter((i) => i.nomeInsumo.trim()).map((i) => i.unidadeMedida))
+  );
   const todosMesmaUnidade = unidadesUsadas.length === 1;
   const unidadePrincipal = todosMesmaUnidade ? unidadesUsadas[0] : null;
 
   const somaVolumeTotal = itensCalculados
     .filter((i) => i.nomeInsumo.trim())
-    .reduce((acc, i) => acc + i.quantidade, 0);
-
-  const somaKg = itensCalculados
-    .filter((i) => i.nomeInsumo.trim() && i.unidadeMedida === "KG")
-    .reduce((acc, i) => acc + i.quantidade, 0);
-
-  const somaUn = itensCalculados
-    .filter((i) => i.nomeInsumo.trim() && i.unidadeMedida === "UNIDADE")
     .reduce((acc, i) => acc + i.quantidade, 0);
 
   // Salvar
@@ -164,6 +229,7 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
         precoEmbalagem: i.precoCentavos,
         tamanhoEmbalagem: i.tamanho,
         quantidade: i.quantidade,
+        ingredienteId: i.ingredienteId && i.ingredienteId !== "custom" ? i.ingredienteId : null,
       }));
 
     startTransition(async () => {
@@ -237,12 +303,12 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
 
             {/* Conteúdo com scroll */}
             <form onSubmit={handleSalvar} className="flex-1 overflow-y-auto my-3 pr-1 space-y-4">
-              <div className="bg-stone-100 p-3 rounded-xl border border-stone-200 text-xs text-stone-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <div>
-                  <strong>Como funciona o cálculo:</strong> Para cada insumo, informe o preço que você pagou no produto inteiro (ex: 1 kg por R$ 5,00) e a quantidade gasta na receita (ex: 0,5 kg).
-                </div>
-                <div className="font-semibold text-stone-700 shrink-0">
-                  Unidades suportadas: <strong>Quilo (kg)</strong> e <strong>Unidade (un)</strong>
+              <div className="bg-amber-50/80 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>
+                    <strong>Preço Automático:</strong> Selecione o insumo cadastrado para puxar o preço da sua última compra. Ao lançar compras novas no mês, a ficha técnica recalcula sozinha!
+                  </span>
                 </div>
               </div>
 
@@ -251,11 +317,11 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-stone-50 text-stone-600 font-bold uppercase tracking-wider border-b">
                     <tr>
-                      <th className="p-3 min-w-[180px]">Insumo / Ingrediente</th>
-                      <th className="p-3 w-32">Medida</th>
-                      <th className="p-3 w-32">Preço Inteiro (R$)</th>
-                      <th className="p-3 w-28">Tam. Pacote</th>
-                      <th className="p-3 w-28">Qtd. na Receita</th>
+                      <th className="p-3 min-w-[220px]">Insumo / Ingrediente</th>
+                      <th className="p-3 w-28">Medida</th>
+                      <th className="p-3 w-32">Preço Compra (R$)</th>
+                      <th className="p-3 w-28">Tam. Compra</th>
+                      <th className="p-3 w-32">Qtd. na Receita</th>
                       <th className="p-3 text-right w-32">Custo Calculado</th>
                       <th className="p-3 text-center w-12"></th>
                     </tr>
@@ -263,19 +329,57 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                   <tbody className="divide-y divide-stone-100">
                     {itens.map((item, idx) => {
                       const calc = itensCalculados[idx];
+                      const estaVinculado = item.ingredienteId && item.ingredienteId !== "custom";
 
                       return (
                         <tr key={idx} className="hover:bg-stone-50">
-                          {/* Nome Insumo */}
+                          {/* Insumo / Ingrediente */}
                           <td className="p-2">
-                            <input
-                              type="text"
-                              required
-                              placeholder="Ex: Farinha de Trigo"
-                              value={item.nomeInsumo}
-                              onChange={(e) => atualizarItem(idx, "nomeInsumo", e.target.value)}
-                              className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
-                            />
+                            <div className="space-y-1.5">
+                              {ingredientes.length > 0 ? (
+                                <select
+                                  value={
+                                    item.ingredienteId === "custom"
+                                      ? "custom"
+                                      : item.ingredienteId ||
+                                        (ingredientes.find(
+                                          (ing) =>
+                                            ing.nome.trim().toLowerCase() ===
+                                            item.nomeInsumo.trim().toLowerCase()
+                                        )?.id || "")
+                                  }
+                                  onChange={(e) => selecionarIngrediente(idx, e.target.value)}
+                                  className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
+                                >
+                                  <option value="">Selecione um ingrediente cadastrado...</option>
+                                  {ingredientes.map((ing) => {
+                                    const ult = ing.historicoPrecos?.[0];
+                                    const precoFmt = ult
+                                      ? formatarCentavosParaReal(ult.precoEmbalagem)
+                                      : "R$ 0,00";
+                                    const tam = ult ? ult.tamanhoEmbalagem : 1;
+                                    const un = ing.unidadeBase === "UNIDADE" ? "un" : "kg";
+                                    return (
+                                      <option key={ing.id} value={ing.id}>
+                                        🌾 {ing.nome} ({precoFmt} / {tam} {un})
+                                      </option>
+                                    );
+                                  })}
+                                  <option value="custom">✍️ Digitar outro ingrediente manual...</option>
+                                </select>
+                              ) : null}
+
+                              {(!estaVinculado || ingredientes.length === 0) && (
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Nome do insumo (ex: Farinha de Trigo)"
+                                  value={item.nomeInsumo}
+                                  onChange={(e) => atualizarItem(idx, "nomeInsumo", e.target.value)}
+                                  className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
+                                />
+                              )}
+                            </div>
                           </td>
 
                           {/* Unidade Medida */}
@@ -300,7 +404,12 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                               placeholder="Ex: 5,00"
                               value={item.precoEmbalagemStr}
                               onChange={(e) => atualizarItem(idx, "precoEmbalagemStr", e.target.value)}
-                              className="w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-bold text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
+                              className={`w-full px-2.5 py-1.5 border rounded-lg text-xs font-bold text-stone-900 outline-none ${
+                                estaVinculado
+                                  ? "bg-amber-50/40 border-amber-200 text-stone-800"
+                                  : "bg-white border-stone-200 focus:ring-1 focus:ring-stone-900"
+                              }`}
+                              title={estaVinculado ? "Preço vindo da última compra deste ingrediente" : ""}
                             />
                           </td>
 
@@ -312,8 +421,14 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                                 required
                                 placeholder="Ex: 1"
                                 value={item.tamanhoEmbalagemStr}
-                                onChange={(e) => atualizarItem(idx, "tamanhoEmbalagemStr", e.target.value)}
-                                className="w-full px-2 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-medium text-stone-800 focus:ring-1 focus:ring-stone-900 outline-none"
+                                onChange={(e) =>
+                                  atualizarItem(idx, "tamanhoEmbalagemStr", e.target.value)
+                                }
+                                className={`w-full px-2 py-1.5 border rounded-lg text-xs font-medium text-stone-800 outline-none ${
+                                  estaVinculado
+                                    ? "bg-amber-50/40 border-amber-200"
+                                    : "bg-white border-stone-200 focus:ring-1 focus:ring-stone-900"
+                                }`}
                               />
                               <span className="text-[10px] text-stone-400 font-bold">
                                 {item.unidadeMedida === "KG" ? "kg" : "un"}
@@ -327,10 +442,10 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                               <input
                                 type="text"
                                 required
-                                placeholder={item.unidadeMedida === "KG" ? "Ex: 0.5" : "Ex: 3"}
+                                placeholder={item.unidadeMedida === "KG" ? "Ex: 0.3" : "Ex: 3"}
                                 value={item.quantidadeStr}
                                 onChange={(e) => atualizarItem(idx, "quantidadeStr", e.target.value)}
-                                className="w-full px-2 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-bold text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
+                                className="w-full px-2 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-bold text-stone-900 focus:ring-2 focus:ring-stone-900 outline-none"
                               />
                               <span className="text-[10px] text-stone-600 font-bold">
                                 {item.unidadeMedida === "KG" ? "kg" : "un"}
@@ -363,98 +478,19 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                 </table>
               </div>
 
-              {/* Botão para Adicionar Insumo */}
-              <button
-                type="button"
-                onClick={adicionarLinha}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-800 hover:text-stone-950 bg-stone-100 hover:bg-stone-200 px-3 py-2 rounded-xl transition border border-stone-200"
-              >
-                <Plus className="w-3.5 h-3.5" /> Adicionar Insumo / Ingrediente
-              </button>
-
-              {/* Box de Totais & Volume Consolidado */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-stone-50 p-4 rounded-xl border border-stone-200">
-                {/* Volume Total */}
-                <div>
-                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">
-                    Volume / Peso Total da Receita
-                  </span>
-                  <div className="text-base sm:text-lg font-black text-stone-900 mt-1 flex items-center gap-1.5">
-                    <Scale className="w-4 h-4 text-stone-700" />
-                    {todosMesmaUnidade ? (
-                      <span>
-                        {somaVolumeTotal.toLocaleString("pt-BR", { maximumFractionDigits: 3 })}{" "}
-                        {unidadePrincipal === "KG" ? "kg" : "unidades"}
-                      </span>
-                    ) : (
-                      <span className="text-xs font-bold text-stone-700">
-                        {somaKg > 0 ? `${somaKg.toLocaleString("pt-BR", { maximumFractionDigits: 3 })} kg` : ""}
-                        {somaKg > 0 && somaUn > 0 ? " + " : ""}
-                        {somaUn > 0 ? `${somaUn} un` : ""}
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[11px] text-stone-500">
-                    {itensCalculados.filter((i) => i.nomeInsumo.trim()).length} insumos citados
-                  </span>
-                </div>
-
-                {/* Custo Total da Receita */}
-                <div>
-                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">
-                    Custo Total da Receita
-                  </span>
-                  <div className="text-base sm:text-lg font-black text-stone-900 mt-1">
-                    {formatarCentavosParaReal(custoTotalReceitaCentavos)}
-                  </div>
-                  <span className="text-[11px] text-stone-500">
-                    Produz {produto.rendimento} {produto.rendimento > 1 ? "bolos/unidades" : "bolo"}
-                  </span>
-                </div>
-
-                {/* Custo Unitário Final do Produto */}
-                <div className="bg-stone-900 text-white p-3 rounded-lg border border-stone-900">
-                  <span className="text-[10px] font-bold text-stone-300 uppercase tracking-wider block">
-                    Custo Unitário do Produto
-                  </span>
-                  <div className="text-lg sm:text-xl font-black text-white mt-1">
-                    {formatarCentavosParaReal(custoUnitarioCentavos)}
-                  </div>
-                  <span className="text-[11px] text-stone-300 font-semibold">
-                    Custo base por unidade produzida
-                  </span>
-                </div>
+              {/* Botão Adicionar Linha */}
+              <div className="flex justify-start">
+                <button
+                  type="button"
+                  onClick={adicionarLinha}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 text-stone-700 bg-stone-50 hover:bg-stone-100 text-xs font-semibold transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Adicionar Insumo
+                </button>
               </div>
 
-              {/* Comparativo com Preço de Venda Praticado */}
-              <div className="bg-white p-3.5 rounded-xl border border-stone-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div className="space-y-0.5">
-                  <span className="font-bold text-stone-800 block">Preços de Venda Atual do Produto:</span>
-                  <div className="flex items-center gap-3 text-stone-600">
-                    <span>
-                      Padrão: <strong>{formatarCentavosParaReal(produto.precoVenda)}</strong>
-                    </span>
-                    <span>•</span>
-                    <span>
-                      Diferenciado: <strong>{formatarCentavosParaReal(produto.precoSecundario || produto.precoVenda)}</strong>
-                    </span>
-                  </div>
-                </div>
-
-                {custoUnitarioCentavos > 0 && produto.precoVenda > 0 && (
-                  <div className="text-right sm:text-right">
-                    <span className="text-[10px] text-stone-500 block">Margem Bruta (Preço Padrão):</span>
-                    <span className="font-black text-sm text-stone-900">
-                      {formatarCentavosParaReal(produto.precoVenda - custoUnitarioCentavos)}{" "}
-                      <span className="text-xs font-bold text-stone-500">
-                        ({Math.round(((produto.precoVenda - custoUnitarioCentavos) / produto.precoVenda) * 100)}%)
-                      </span>
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Observações da Ficha */}
+              {/* Observações da Receita */}
               <div>
                 <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
                   Observações / Modo de Preparo (Opcional)
@@ -463,26 +499,90 @@ export default function ModalFichaTecnica({ produto }: ModalFichaTecnicaProps) {
                   rows={2}
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
-                  placeholder="Ex: Tempo de forno 45min a 180°C..."
-                  className="w-full px-3 py-2 border rounded-xl text-xs text-stone-900 focus:ring-1 focus:ring-stone-900 outline-none"
+                  placeholder="Ex: Forno a 180° por 40 min..."
+                  className="w-full px-3 py-2 border border-stone-200 rounded-xl text-xs font-medium text-stone-800 placeholder:text-stone-400 focus:ring-1 focus:ring-stone-900 outline-none"
                 />
               </div>
 
+              {/* Resumo de Custos e Margem de Lucro */}
+              <div className="bg-stone-900 text-white p-4 rounded-xl space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center sm:text-left">
+                  <div>
+                    <span className="text-[10px] text-stone-400 uppercase font-bold block">
+                      Custo Total da Receita
+                    </span>
+                    <span className="text-base font-extrabold text-stone-100">
+                      {formatarCentavosParaReal(custoTotalReceitaCentavos)}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-stone-400 uppercase font-bold block">
+                      Rendimento
+                    </span>
+                    <span className="text-base font-extrabold text-stone-100">
+                      {produto.rendimento} {produto.rendimento > 1 ? "unidades" : "unidade"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-amber-400 uppercase font-bold block">
+                      Custo por Unidade
+                    </span>
+                    <span className="text-base font-black text-amber-300">
+                      {formatarCentavosParaReal(custoUnitarioCentavos)}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-emerald-400 uppercase font-bold block">
+                      Preço de Venda
+                    </span>
+                    <span className="text-base font-black text-emerald-300">
+                      {formatarCentavosParaReal(produto.precoVenda)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Lucro e Margem */}
+                {produto.precoVenda > 0 && (
+                  <div className="pt-2 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+                    <div className="text-stone-300">
+                      Lucro Bruto estimado por unidade:{" "}
+                      <strong className="text-emerald-400 font-bold">
+                        {formatarCentavosParaReal(produto.precoVenda - custoUnitarioCentavos)}
+                      </strong>
+                    </div>
+
+                    <div className="text-stone-300">
+                      Margem de Lucro:{" "}
+                      <strong className="text-emerald-400 font-bold">
+                        {(
+                          ((produto.precoVenda - custoUnitarioCentavos) / produto.precoVenda) *
+                          100
+                        ).toFixed(1)}
+                        %
+                      </strong>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Botões do Rodapé */}
-              <div className="flex gap-2 pt-2 border-t">
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setAberto(false)}
-                  className="py-2.5 px-4 border rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-50"
+                  className="px-4 py-2 border border-stone-200 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-50 transition"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 py-2.5 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5"
+                  className="px-5 py-2 bg-stone-900 text-white rounded-xl text-xs font-bold hover:bg-stone-800 transition disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-sm"
                 >
-                  {isPending ? "Salvando Ficha..." : "Salvar Ficha Técnica & Atualizar Custo"}
+                  {isPending ? "Salvando..." : "Salvar Ficha Técnica"}
                 </button>
               </div>
             </form>
