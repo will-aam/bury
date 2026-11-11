@@ -3,6 +3,7 @@ import { formatarCentavosParaReal, formatarDataPtBr } from "@/lib/formatadores";
 import Link from "next/link";
 import { Plus, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import ModalPagamentoVenda from "./ModalPagamentoVenda";
+import ModalEditarVenda from "./ModalEditarVenda";
 
 export const dynamic = "force-dynamic";
 
@@ -15,20 +16,32 @@ export default async function VendasPage({
   const statusFiltro = params.status;
   const clienteIdFiltro = params.clienteId;
 
-  const vendas = await prisma.venda.findMany({
-    where: {
-      ...(clienteIdFiltro ? { clienteId: clienteIdFiltro } : {}),
-    },
-    orderBy: { data: "desc" },
-    include: {
-      cliente: true,
-      itens: {
-        include: { produto: true },
+  const [vendas, clientes, produtos] = await Promise.all([
+    prisma.venda.findMany({
+      where: {
+        ...(clienteIdFiltro ? { clienteId: clienteIdFiltro } : {}),
       },
-      pagamentos: true,
-      criadoPor: true,
-    },
-  });
+      orderBy: { data: "desc" },
+      include: {
+        cliente: true,
+        itens: {
+          include: { produto: true },
+        },
+        pagamentos: true,
+        criadoPor: true,
+      },
+    }),
+    prisma.cliente.findMany({
+      where: { ativo: true },
+      orderBy: { nome: "asc" },
+      select: { id: true, nome: true, tipo: true },
+    }),
+    prisma.produto.findMany({
+      where: { ativo: true },
+      orderBy: { nome: "asc" },
+      select: { id: true, nome: true, precoVenda: true, precoSecundario: true },
+    }),
+  ]);
 
   const vendasCalculadas = vendas.map((v) => {
     const total = v.itens.reduce((acc, i) => acc + i.quantidade * i.precoUnitario, 0);
@@ -183,15 +196,21 @@ export default async function VendasPage({
                 </div>
               </div>
 
-              {v.saldo > 0 && (
-                <div className="pt-2 border-t flex justify-end">
+              <div className="pt-2 border-t flex items-center justify-between gap-2">
+                <ModalEditarVenda
+                  venda={v}
+                  clientes={clientes}
+                  produtos={produtos}
+                />
+
+                {v.saldo > 0 && (
                   <ModalPagamentoVenda
                     vendaId={v.id}
                     clienteNome={v.cliente.nome}
                     saldoDevedor={v.saldo}
                   />
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ))
         )}
@@ -273,13 +292,21 @@ export default async function VendasPage({
                       )}
                     </td>
                     <td className="p-4 text-right">
-                      {v.saldo > 0 && (
-                        <ModalPagamentoVenda
-                          vendaId={v.id}
-                          clienteNome={v.cliente.nome}
-                          saldoDevedor={v.saldo}
+                      <div className="inline-flex items-center justify-end gap-2">
+                        <ModalEditarVenda
+                          venda={v}
+                          clientes={clientes}
+                          produtos={produtos}
                         />
-                      )}
+
+                        {v.saldo > 0 && (
+                          <ModalPagamentoVenda
+                            vendaId={v.id}
+                            clienteNome={v.cliente.nome}
+                            saldoDevedor={v.saldo}
+                          />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

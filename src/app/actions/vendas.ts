@@ -144,3 +144,121 @@ export async function adicionarPagamentoVendaAction(formData: FormData) {
 
   return { sucesso: true };
 }
+
+interface EditarVendaInput {
+  id: string;
+  clienteId: string;
+  data: string;
+  observacoes?: string;
+  dataPrevistaPgto?: string;
+  itens: {
+    produtoId: string;
+    quantidade: number;
+    precoUnitario: number;
+  }[];
+}
+
+export async function editarVendaAction(input: EditarVendaInput) {
+  const sessao = await obterSessao();
+  if (!sessao) return { erro: "Não autorizado." };
+
+  if (!input.id || !input.clienteId || !input.itens || input.itens.length === 0) {
+    return { erro: "Cliente e produtos são obrigatórios." };
+  }
+
+  try {
+    const dataVenda = input.data ? new Date(input.data + "T12:00:00") : new Date();
+    const dataPrevista = input.dataPrevistaPgto ? new Date(input.dataPrevistaPgto + "T12:00:00") : null;
+
+    // Snapshot de custos das fichas técnicas
+    const produtosIds = input.itens.map((i) => i.produtoId);
+    const fichas = await prisma.fichaTecnica.findMany({
+      where: { produtoId: { in: produtosIds } },
+      include: {
+        produto: { select: { rendimento: true } },
+        itens: true,
+      },
+    });
+
+    const mapaCustos: Record<string, number> = {};
+    for (const ficha of fichas) {
+      let custoTotalFicha = 0;
+      for (const item of ficha.itens) {
+        custoTotalFicha += item.custoCalculado || 0;
+      }
+      const rend = ficha.produto.rendimento > 0 ? ficha.produto.rendimento : 1;
+      mapaCustos[ficha.produtoId] = Math.round(custoTotalFicha / rend);
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Atualizar dados principais da venda
+      await tx.venda.update({
+        where: { id: input.id },
+        data: {
+          clienteId: input.clienteId,
+          data: dataVenda,
+          dataPrevistaPgto: dataPrevista,
+          observacoes: input.observacoes || null,
+        },
+      });
+
+      // 2. Substituir itens da venda
+      await tx.itemVenda.deleteMany({
+        where: { vendaId: input.id },
+      });
+
+      await tx.itemVenda.createMany({
+        data: input.itens.map((item) => ({
+          vendaId: input.id,
+          produtoId: item.produtoId,
+          quantidade: item.quantidade,
+          precoUnitario: item.precoUnitario,
+          custoUnitario: mapaCustos[item.produtoId] || null,
+        })),
+      });
+    });
+
+    revalidatePath("/vendas");
+    revalidatePath("/");
+    revalidatePath("/clientes");
+    revalidatePath(`/clientes/${input.clienteId}`);
+
+    return { sucesso: true };
+  } catch (error: any) {
+    console.error("Erro ao editar venda:", error);
+    return { erro: "Ocorreu um erro ao editar a venda." };
+  }
+}
+
+export async function excluirVendaAction(vendaId: string) {
+  const sessao = await obterSessao();
+  if (!sessao) return { erro: "Não autorizado." };
+
+  if (!vendaId) return { erro: "Identificador da venda inválido." };
+
+  try {
+    const venda = await prisma.venda.findUnique({
+      where: { id: vendaId },
+      select: { id: true, clienteId: true },
+    });
+
+    if (!venda) {
+      return { erro: "Venda não encontrada." };
+    }
+
+    // A exclusão cascade no schema cuida dos itens e pagamentos vinculados
+    await prisma.venda.delete({
+      where: { id: vendaId },
+    });
+
+    revalidatePath("/vendas");
+    revalidatePath("/");
+    revalidatePath("/clientes");
+    revalidatePath(`/clientes/${venda.clienteId}`);
+
+    return { sucesso: true };
+  } catch (error: any) {
+    console.error("Erro ao excluir venda:", error);
+    return { erro: "Ocorreu um erro ao excluir a venda." };
+  }
+}

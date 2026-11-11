@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, User, Phone, MapPin, FileText, AlertCircle, ShoppingBag } from "lucide-react";
 
 import ModalExportarHistoricoCliente from "./ModalExportarHistoricoCliente";
+import ModalEditarVenda from "@/app/(dashboard)/vendas/ModalEditarVenda";
 
 export const dynamic = "force-dynamic";
 
@@ -15,18 +16,30 @@ export default async function DetalheClientePage({
 }) {
   const { id } = await params;
 
-  const cliente = await prisma.cliente.findUnique({
-    where: { id },
-    include: {
-      vendas: {
-        orderBy: { data: "desc" },
-        include: {
-          itens: { include: { produto: true } },
-          pagamentos: true,
+  const [cliente, clientes, produtos] = await Promise.all([
+    prisma.cliente.findUnique({
+      where: { id },
+      include: {
+        vendas: {
+          orderBy: { data: "desc" },
+          include: {
+            itens: { include: { produto: true } },
+            pagamentos: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.cliente.findMany({
+      where: { ativo: true },
+      orderBy: { nome: "asc" },
+      select: { id: true, nome: true, tipo: true },
+    }),
+    prisma.produto.findMany({
+      where: { ativo: true },
+      orderBy: { nome: "asc" },
+      select: { id: true, nome: true, precoVenda: true, precoSecundario: true },
+    }),
+  ]);
 
   if (!cliente) {
     notFound();
@@ -178,7 +191,10 @@ export default async function DetalheClientePage({
 
                 <div className="flex items-center justify-between text-xs pt-1 border-t">
                   <span className="text-stone-500">Total: <strong>{formatarCentavosParaReal(total)}</strong></span>
-                  <span className="text-emerald-700">Pago: <strong>{formatarCentavosParaReal(pago)}</strong></span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-700">Pago: <strong>{formatarCentavosParaReal(pago)}</strong></span>
+                    <ModalEditarVenda venda={v} clientes={clientes} produtos={produtos} />
+                  </div>
                 </div>
               </div>
             );
@@ -196,6 +212,7 @@ export default async function DetalheClientePage({
                   <th className="p-4 text-right">Valor Total</th>
                   <th className="p-4 text-right">Valor Pago</th>
                   <th className="p-4 text-right">Saldo Devedor</th>
+                  <th className="p-4 text-right">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -222,6 +239,9 @@ export default async function DetalheClientePage({
                         ) : (
                           <span className="text-xs font-bold text-emerald-600">Quitado</span>
                         )}
+                      </td>
+                      <td className="p-4 text-right">
+                        <ModalEditarVenda venda={v} clientes={clientes} produtos={produtos} />
                       </td>
                     </tr>
                   );
